@@ -1,8 +1,3 @@
--- =============================================
--- UAM Lab Help Desk - Script de Base de Datos
--- Ejecutar en SQL Server Management Studio
--- =============================================
-
 USE master;
 GO
 
@@ -21,9 +16,8 @@ GO
 USE UamLabHelpDeskDb;
 GO
 
--- =============================================
+
 -- Tabla: Laboratories
--- =============================================
 IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Laboratories')
 BEGIN
     CREATE TABLE Laboratories (
@@ -43,9 +37,8 @@ BEGIN
 END
 GO
 
--- =============================================
 -- Tabla: Equipment
--- =============================================
+
 IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Equipment')
 BEGIN
     CREATE TABLE Equipment (
@@ -75,9 +68,8 @@ BEGIN
 END
 GO
 
--- =============================================
+
 -- Tabla de historial de migraciones EF Core
--- =============================================
 IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = '__EFMigrationsHistory')
 BEGIN
     CREATE TABLE __EFMigrationsHistory (
@@ -98,9 +90,8 @@ BEGIN
 END
 GO
 
--- =============================================
+
 -- Datos de ejemplo (opcional)
--- =============================================
 IF NOT EXISTS (SELECT 1 FROM Laboratories)
 BEGIN
     INSERT INTO Laboratories (Name, Building, Floor, Capacity, IsActive, CreatedAtUtc, UpdatedAtUtc)
