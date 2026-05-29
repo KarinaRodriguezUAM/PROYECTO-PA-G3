@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+  <data name="OperationSuccessful" xml:space="preserve"><value>Operacion realizada con exito.</value></data>
+  <data name="EquipmentNotFound" xml:space="preserve"><value>No se encontraron equipos registrados.</value></data>
+  <data name="EquipmentItemNotFound" xml:space="preserve"><value>No se encontro el equipo especificado.</value></data>
+  <data name="EquipmentNotFoundForLaboratory" xml:space="preserve"><value>No se encontraron equipos para el laboratorio especificado.</value></data>
+  <data name="EquipmentCreatedSuccessfully" xml:space="preserve"><value>El equipo se ha creado con exito.</value></data>
+  <data name="EquipmentUpdatedSuccessfully" xml:space="preserve"><value>El equipo se ha actualizado con exito.</value></data>
+  <data name="EquipmentDeletedSuccessfully" xml:space="preserve"><value>El equipo se ha eliminado con exito.</value></data>
+  <data name="EquipmentCodeExists" xml:space="preserve"><value>Ya existe un equipo registrado con ese codigo.</value></data>
+  <data name="EquipmentSerialNumberExists" xml:space="preserve"><value>Ya existe un equipo registrado con ese numero de serie.</value></data>
+  <data name="LaboratoryNotFound" xml:space="preserve"><value>No se encontro el laboratorio especificado.</value></data>
+  <data name="LaboratoryInactive" xml:space="preserve"><value>No se puede asignar un equipo a un laboratorio inactivo.</value></data>
+</root>
