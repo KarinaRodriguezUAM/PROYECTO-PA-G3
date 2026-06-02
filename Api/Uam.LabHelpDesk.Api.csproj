@@ -4,10 +4,6 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-<<<<<<< HEAD
-    <UserSecretsId>6b05be59-25f4-4af2-a769-15f63c6df649</UserSecretsId>
-=======
->>>>>>> 541cdaefe9f9066656415c2607aa24a2e3b3801e
   </PropertyGroup>
 
   <ItemGroup>
@@ -17,13 +13,6 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.7" />
-<<<<<<< HEAD
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.2">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-=======
->>>>>>> 541cdaefe9f9066656415c2607aa24a2e3b3801e
     <PackageReference Include="Swashbuckle.AspNetCore" Version="8.1.4" />
   </ItemGroup>
 
