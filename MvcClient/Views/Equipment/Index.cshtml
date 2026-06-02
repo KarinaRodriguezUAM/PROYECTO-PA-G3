@@ -1,0 +1,258 @@
+@{
+    ViewData["Title"] = "Equipos";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>🖥️ Equipos</h2>
+    <button class="btn btn-primary" onclick="openCreateModal()">+ Nuevo Equipo</button>
+</div>
+
+<div id="alertContainer"></div>
+
+<div class="table-responsive">
+    <table class="table table-bordered table-hover">
+        <thead class="table-dark">
+            <tr>
+                <th>#</th>
+                <th>Código</th>
+                <th>Laboratorio</th>
+                <th>Marca</th>
+                <th>Modelo</th>
+                <th>Tipo</th>
+                <th>Estado</th>
+                <th>Activo</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody id="equipmentBody">
+            <tr><td colspan="9" class="text-center">Cargando...</td></tr>
+        </tbody>
+    </table>
+</div>
+
+<!-- Modal Crear/Editar -->
+<div class="modal fade" id="eqModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="eqModalTitle">Equipo</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="eqId" value="0" />
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Laboratorio <span class="text-danger">*</span></label>
+                        <select class="form-select" id="eqLaboratoryId"></select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Código <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="eqCode" maxlength="20" />
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Marca <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="eqBrand" maxlength="50" />
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Modelo <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="eqModel" maxlength="50" />
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Número de Serie <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="eqSerial" maxlength="50" />
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Tipo <span class="text-danger">*</span></label>
+                        <select class="form-select" id="eqType">
+                            <option value="">Seleccione...</option>
+                            <option value="Desktop">Desktop</option>
+                            <option value="Laptop">Laptop</option>
+                            <option value="Printer">Printer</option>
+                            <option value="Projector">Projector</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Estado <span class="text-danger">*</span></label>
+                        <select class="form-select" id="eqStatus">
+                            <option value="">Seleccione...</option>
+                            <option value="Operational">Operational</option>
+                            <option value="UnderRepair">UnderRepair</option>
+                            <option value="Decommissioned">Decommissioned</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Fecha de Compra</label>
+                        <input type="date" class="form-control" id="eqPurchaseDate" />
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="saveEquipment()">Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Detalle -->
+<div class="modal fade" id="detailModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Detalle del Equipo</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="detailBody">Cargando...</div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    const eqModal = new bootstrap.Modal(document.getElementById('eqModal'));
+    const detailModal = new bootstrap.Modal(document.getElementById('detailModal'));
+
+    async function loadEquipment() {
+        const res = await fetch('/Equipment/GetAll');
+        const data = res.ok ? await res.json() : [];
+        const tbody = document.getElementById('equipmentBody');
+        if (!data.length) {
+            tbody.innerHTML = '<tr><td colspan="9" class="text-center text-muted">No hay equipos registrados.</td></tr>';
+            return;
+        }
+        tbody.innerHTML = data.map(e => `
+            <tr>
+                <td>${e.id}</td>
+                <td>${e.code}</td>
+                <td>${e.laboratoryName}</td>
+                <td>${e.brand}</td>
+                <td>${e.model}</td>
+                <td>${e.type}</td>
+                <td><span class="badge ${e.status==='Operational'?'bg-success':e.status==='UnderRepair'?'bg-warning text-dark':'bg-secondary'}">${e.status}</span></td>
+                <td><span class="badge ${e.isActive?'bg-success':'bg-secondary'}">${e.isActive?'Activo':'Inactivo'}</span></td>
+                <td>
+                    <button class="btn btn-sm btn-info" onclick="showDetail(${e.id})">Ver</button>
+                    <button class="btn btn-sm btn-warning" onclick="openEditModal(${JSON.stringify(e).replace(/"/g,'&quot;')})">Editar</button>
+                    <button class="btn btn-sm btn-danger" onclick="deleteEquipment(${e.id})">Eliminar</button>
+                </td>
+            </tr>`).join('');
+    }
+
+    async function loadActiveLaboratories(selectedId) {
+        const res = await fetch('/Equipment/GetActiveLaboratories');
+        const data = res.ok ? await res.json() : [];
+        const sel = document.getElementById('eqLaboratoryId');
+        sel.innerHTML = '<option value="">Seleccione laboratorio...</option>' +
+            data.map(l => `<option value="${l.id}" ${l.id==selectedId?'selected':''}>${l.name}</option>`).join('');
+    }
+
+    async function openCreateModal() {
+        document.getElementById('eqModalTitle').textContent = 'Nuevo Equipo';
+        document.getElementById('eqId').value = 0;
+        ['eqCode','eqBrand','eqModel','eqSerial','eqPurchaseDate'].forEach(id => document.getElementById(id).value = '');
+        document.getElementById('eqType').value = '';
+        document.getElementById('eqStatus').value = '';
+        await loadActiveLaboratories(0);
+        eqModal.show();
+    }
+
+    async function openEditModal(e) {
+        document.getElementById('eqModalTitle').textContent = 'Editar Equipo';
+        document.getElementById('eqId').value = e.id;
+        document.getElementById('eqCode').value = e.code;
+        document.getElementById('eqBrand').value = e.brand;
+        document.getElementById('eqModel').value = e.model;
+        document.getElementById('eqSerial').value = e.serialNumber;
+        document.getElementById('eqType').value = e.type;
+        document.getElementById('eqStatus').value = e.status;
+        document.getElementById('eqPurchaseDate').value = e.purchaseDate ? e.purchaseDate.substring(0, 10) : '';
+        await loadActiveLaboratories(e.laboratoryId);
+        eqModal.show();
+    }
+
+    async function saveEquipment() {
+        const id = parseInt(document.getElementById('eqId').value);
+        const purchaseRaw = document.getElementById('eqPurchaseDate').value;
+        const dto = {
+            laboratoryId: parseInt(document.getElementById('eqLaboratoryId').value),
+            code: document.getElementById('eqCode').value,
+            brand: document.getElementById('eqBrand').value,
+            model: document.getElementById('eqModel').value,
+            serialNumber: document.getElementById('eqSerial').value,
+            type: document.getElementById('eqType').value,
+            status: document.getElementById('eqStatus').value,
+            purchaseDate: purchaseRaw || null
+        };
+
+        const url = id === 0 ? '/Equipment/Create' : `/Equipment/Update?id=${id}`;
+        const method = id === 0 ? 'POST' : 'PUT';
+
+        const res = await fetch(url, {
+            method, headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(dto)
+        });
+        const data = await res.json();
+        if (res.ok && data.success !== false) {
+            eqModal.hide();
+            showAlert('success', data.message || 'Operación realizada con éxito.');
+            loadEquipment();
+        } else {
+            showAlert('danger', data.message || 'Error al guardar el equipo.');
+        }
+    }
+
+    async function deleteEquipment(id) {
+        if (!confirm('¿Desea eliminar este equipo?')) return;
+        const res = await fetch(`/Equipment/Delete?id=${id}`, { method: 'DELETE' });
+        const data = await res.json();
+        if (res.ok) {
+            showAlert('success', data.message || 'Equipo eliminado.');
+            loadEquipment();
+        } else {
+            showAlert('danger', data.message || 'Error al eliminar.');
+        }
+    }
+
+    async function showDetail(id) {
+        document.getElementById('detailBody').innerHTML = 'Cargando...';
+        detailModal.show();
+        const res = await fetch(`/Equipment/GetById?id=${id}`);
+        const data = await res.json();
+        const e = data.result ?? data;
+        document.getElementById('detailBody').innerHTML = `
+            <dl class="row">
+                <dt class="col-sm-4">Código</dt><dd class="col-sm-8">${e.code}</dd>
+                <dt class="col-sm-4">Laboratorio</dt><dd class="col-sm-8">${e.laboratoryName}</dd>
+                <dt class="col-sm-4">Marca</dt><dd class="col-sm-8">${e.brand}</dd>
+                <dt class="col-sm-4">Modelo</dt><dd class="col-sm-8">${e.model}</dd>
+                <dt class="col-sm-4">Número de Serie</dt><dd class="col-sm-8">${e.serialNumber}</dd>
+                <dt class="col-sm-4">Tipo</dt><dd class="col-sm-8">${e.type}</dd>
+                <dt class="col-sm-4">Estado</dt><dd class="col-sm-8"><span class="badge ${e.status==='Operational'?'bg-success':e.status==='UnderRepair'?'bg-warning text-dark':'bg-secondary'}">${e.status}</span></dd>
+                <dt class="col-sm-4">Fecha Compra</dt><dd class="col-sm-8">${e.purchaseDate ?? 'N/A'}</dd>
+                <dt class="col-sm-4">Activo</dt><dd class="col-sm-8"><span class="badge ${e.isActive?'bg-success':'bg-secondary'}">${e.isActive?'Activo':'Inactivo'}</span></dd>
+                <dt class="col-sm-4">Creado</dt><dd class="col-sm-8">${new Date(e.createdAtUtc).toLocaleString()}</dd>
+                <dt class="col-sm-4">Actualizado</dt><dd class="col-sm-8">${new Date(e.updatedAtUtc).toLocaleString()}</dd>
+            </dl>`;
+    }
+
+    function showAlert(type, msg) {
+        const c = document.getElementById('alertContainer');
+        c.innerHTML = `<div class="alert alert-${type} alert-dismissible fade show" role="alert">
+            ${msg}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>`;
+    }
+
+    // Escuchar cambios en laboratorios desde otra página
+    window.addEventListener('laboratoriesUpdated', async () => {
+        const selectedId = parseInt(document.getElementById('eqLaboratoryId').value) || 0;
+        if (selectedId || document.getElementById('eqModal').classList.contains('show')) {
+            await loadActiveLaboratories(selectedId);
+        }
+    });
+
+    loadEquipment();
+</script>
+}

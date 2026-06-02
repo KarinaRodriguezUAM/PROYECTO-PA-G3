@@ -1,0 +1,238 @@
+@{
+    ViewData["Title"] = "Laboratorios";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>🔬 Laboratorios</h2>
+    <button class="btn btn-primary" onclick="openCreateModal()">+ Nuevo Laboratorio</button>
+</div>
+
+<div id="alertContainer"></div>
+
+<div class="table-responsive">
+    <table class="table table-bordered table-hover" id="laboratoriesTable">
+        <thead class="table-dark">
+            <tr>
+                <th>#</th>
+                <th>Nombre</th>
+                <th>Edificio</th>
+                <th>Piso</th>
+                <th>Capacidad</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody id="laboratoriesBody">
+            <tr><td colspan="7" class="text-center">Cargando...</td></tr>
+        </tbody>
+    </table>
+</div>
+
+<!-- Modal Crear/Editar -->
+<div class="modal fade" id="labModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="labModalTitle">Laboratorio</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="labId" value="0" />
+                <div class="mb-3">
+                    <label class="form-label">Nombre <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="labName" maxlength="100" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Edificio <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="labBuilding" maxlength="50" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Piso <span class="text-danger">*</span></label>
+                    <input type="number" class="form-control" id="labFloor" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Capacidad <span class="text-danger">*</span></label>
+                    <input type="number" class="form-control" id="labCapacity" min="1" />
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="saveLaboratory()">Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Detalle -->
+<div class="modal fade" id="detailModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Detalle del Laboratorio</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="detailBody">Cargando...</div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    const labModal = new bootstrap.Modal(document.getElementById('labModal'));
+    const detailModal = new bootstrap.Modal(document.getElementById('detailModal'));
+
+    async function loadLaboratories() {
+        const res = await fetch('/Laboratories/GetAll');
+        const data = res.ok ? await res.json() : [];
+        const tbody = document.getElementById('laboratoriesBody');
+        if (!data.length) {
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">No hay laboratorios registrados.</td></tr>';
+            return;
+        }
+        tbody.innerHTML = data.map(l => `
+            <tr>
+                <td>${l.id}</td>
+                <td>${l.name}</td>
+                <td>${l.building}</td>
+                <td>${l.floor}</td>
+                <td>${l.capacity}</td>
+                <td><span class="badge ${l.isActive ? 'bg-success' : 'bg-secondary'}">${l.isActive ? 'Activo' : 'Inactivo'}</span></td>
+                <td>
+                    <button class="btn btn-sm btn-info" onclick="showDetail(${l.id})">Ver</button>
+                    <button class="btn btn-sm btn-warning" onclick="openEditModal(${l.id},'${escHtml(l.name)}','${escHtml(l.building)}',${l.floor},${l.capacity})">Editar</button>
+                    <button class="btn btn-sm btn-danger" onclick="deleteLaboratory(${l.id})">Eliminar</button>
+                </td>
+            </tr>`).join('');
+    }
+
+    function escHtml(s) { return (s||'').replace(/'/g,"\\'"); }
+
+    function openCreateModal() {
+        document.getElementById('labModalTitle').textContent = 'Nuevo Laboratorio';
+        document.getElementById('labId').value = 0;
+        document.getElementById('labName').value = '';
+        document.getElementById('labBuilding').value = '';
+        document.getElementById('labFloor').value = '';
+        document.getElementById('labCapacity').value = '';
+        labModal.show();
+    }
+
+    function openEditModal(id, name, building, floor, capacity) {
+        document.getElementById('labModalTitle').textContent = 'Editar Laboratorio';
+        document.getElementById('labId').value = id;
+        document.getElementById('labName').value = name;
+        document.getElementById('labBuilding').value = building;
+        document.getElementById('labFloor').value = floor;
+        document.getElementById('labCapacity').value = capacity;
+        labModal.show();
+    }
+
+    async function saveLaboratory() {
+        const id = parseInt(document.getElementById('labId').value);
+        const dto = {
+            name: document.getElementById('labName').value,
+            building: document.getElementById('labBuilding').value,
+            floor: parseInt(document.getElementById('labFloor').value),
+            capacity: parseInt(document.getElementById('labCapacity').value)
+        };
+
+        const url = id === 0 ? '/Laboratories/Create' : `/Laboratories/Update?id=${id}`;
+        const method = id === 0 ? 'POST' : 'PUT';
+
+        try {
+            const res = await fetch(url, {
+                method, headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dto)
+            });
+
+            const data = await res.json();
+            console.log('Response status:', res.status);
+            console.log('Response data:', data);
+
+            if (data.success === true) {
+                labModal.hide();
+                showAlert('success', data.message || 'Operación realizada con éxito.');
+                loadLaboratories();
+                // Notificar a la página de Equipos que los laboratorios han cambiado
+                sessionStorage.setItem('laboratoriesUpdated', Date.now().toString());
+                window.dispatchEvent(new CustomEvent('laboratoriesUpdated'));
+            } else {
+                showAlert('danger', data.message || 'Error al guardar el laboratorio. Estado: ' + res.status + (data.details ? ' - ' + data.details : ''));
+            }
+        } catch (error) {
+            console.error('Error en saveLaboratory:', error);
+            showAlert('danger', 'Error al guardar: ' + error.message);
+        }
+    }
+
+    async function deleteLaboratory(id) {
+        if (!confirm('¿Desea eliminar este laboratorio?')) return;
+        try {
+            const res = await fetch(`/Laboratories/Delete?id=${id}`, { method: 'DELETE' });
+            const data = await res.json();
+            console.log('Delete Response:', data);
+            if (data.success === true) {
+                showAlert('success', data.message || 'Laboratorio eliminado.');
+                loadLaboratories();
+                // Notificar a la página de Equipos que los laboratorios han cambiado
+                sessionStorage.setItem('laboratoriesUpdated', Date.now().toString());
+                window.dispatchEvent(new CustomEvent('laboratoriesUpdated'));
+            } else {
+                showAlert('danger', data.message || 'Error al eliminar.' + (data.details ? ' - ' + data.details : ''));
+            }
+        } catch (error) {
+            console.error('Error en deleteLaboratory:', error);
+            showAlert('danger', 'Error al eliminar: ' + error.message);
+        }
+    }
+
+    async function showDetail(id) {
+        document.getElementById('detailBody').innerHTML = 'Cargando...';
+        detailModal.show();
+
+        const [labRes, eqRes] = await Promise.all([
+            fetch(`/Laboratories/GetById?id=${id}`),
+            fetch(`/Equipment/GetByLaboratory?laboratoryId=${id}`)
+        ]);
+
+        const labData = await labRes.json();
+        const eqData = eqRes.ok ? await eqRes.json() : [];
+        const lab = labData.result ?? labData;
+
+        const eqRows = Array.isArray(eqData) && eqData.length
+            ? eqData.map(e => `<tr>
+                <td>${e.code}</td><td>${e.brand}</td><td>${e.model}</td>
+                <td>${e.type}</td><td><span class="badge ${e.status==='Operational'?'bg-success':e.status==='UnderRepair'?'bg-warning':'bg-secondary'}">${e.status}</span></td>
+                <td><span class="badge ${e.isActive?'bg-success':'bg-secondary'}">${e.isActive?'Activo':'Inactivo'}</span></td>
+              </tr>`).join('')
+            : '<tr><td colspan="6" class="text-muted text-center">Sin equipos registrados.</td></tr>';
+
+        document.getElementById('detailBody').innerHTML = `
+            <dl class="row">
+                <dt class="col-sm-3">Nombre</dt><dd class="col-sm-9">${lab.name}</dd>
+                <dt class="col-sm-3">Edificio</dt><dd class="col-sm-9">${lab.building}</dd>
+                <dt class="col-sm-3">Piso</dt><dd class="col-sm-9">${lab.floor}</dd>
+                <dt class="col-sm-3">Capacidad</dt><dd class="col-sm-9">${lab.capacity}</dd>
+                <dt class="col-sm-3">Estado</dt><dd class="col-sm-9"><span class="badge ${lab.isActive?'bg-success':'bg-secondary'}">${lab.isActive?'Activo':'Inactivo'}</span></dd>
+            </dl>
+            <h6 class="mt-3">Equipos en este laboratorio</h6>
+            <table class="table table-sm table-bordered">
+                <thead class="table-secondary">
+                    <tr><th>Código</th><th>Marca</th><th>Modelo</th><th>Tipo</th><th>Estado</th><th>Activo</th></tr>
+                </thead>
+                <tbody>${eqRows}</tbody>
+            </table>`;
+    }
+
+    function showAlert(type, msg) {
+        const c = document.getElementById('alertContainer');
+        c.innerHTML = `<div class="alert alert-${type} alert-dismissible fade show" role="alert">
+            ${msg}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>`;
+    }
+
+    loadLaboratories();
+</script>
+}
