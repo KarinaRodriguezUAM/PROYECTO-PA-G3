@@ -11,10 +11,18 @@
 using System;
 using System.Reflection;
 
+<<<<<<< HEAD
+[assembly: Microsoft.Extensions.Configuration.UserSecrets.UserSecretsIdAttribute("6b05be59-25f4-4af2-a769-15f63c6df649")]
+[assembly: System.Reflection.AssemblyCompanyAttribute("Uam.LabHelpDesk.Api")]
+[assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
+[assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+84f1e8e2bffa18f6de7a27575c370ba3ca691046")]
+=======
 [assembly: System.Reflection.AssemblyCompanyAttribute("Uam.LabHelpDesk.Api")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
 [assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+>>>>>>> 541cdaefe9f9066656415c2607aa24a2e3b3801e
 [assembly: System.Reflection.AssemblyProductAttribute("Uam.LabHelpDesk.Api")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Uam.LabHelpDesk.Api")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

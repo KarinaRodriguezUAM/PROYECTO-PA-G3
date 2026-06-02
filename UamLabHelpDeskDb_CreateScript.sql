@@ -1,3 +1,11 @@
+<<<<<<< HEAD
+-- =============================================
+-- UAM Lab Help Desk - Script de Base de Datos
+-- Ejecutar en SQL Server Management Studio
+-- =============================================
+
+=======
+>>>>>>> 541cdaefe9f9066656415c2607aa24a2e3b3801e
 USE master;
 GO
 
@@ -16,8 +24,14 @@ GO
 USE UamLabHelpDeskDb;
 GO
 
+<<<<<<< HEAD
+-- =============================================
+-- Tabla: Laboratories
+-- =============================================
+=======
 
 -- Tabla: Laboratories
+>>>>>>> 541cdaefe9f9066656415c2607aa24a2e3b3801e
 IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Laboratories')
 BEGIN
     CREATE TABLE Laboratories (
@@ -37,8 +51,14 @@ BEGIN
 END
 GO
 
+<<<<<<< HEAD
+-- =============================================
+-- Tabla: Equipment
+-- =============================================
+=======
 -- Tabla: Equipment
 
+>>>>>>> 541cdaefe9f9066656415c2607aa24a2e3b3801e
 IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Equipment')
 BEGIN
     CREATE TABLE Equipment (
@@ -68,8 +88,14 @@ BEGIN
 END
 GO
 
+<<<<<<< HEAD
+-- =============================================
+-- Tabla de historial de migraciones EF Core
+-- =============================================
+=======
 
 -- Tabla de historial de migraciones EF Core
+>>>>>>> 541cdaefe9f9066656415c2607aa24a2e3b3801e
 IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = '__EFMigrationsHistory')
 BEGIN
     CREATE TABLE __EFMigrationsHistory (
@@ -90,8 +116,14 @@ BEGIN
 END
 GO
 
+<<<<<<< HEAD
+-- =============================================
+-- Datos de ejemplo (opcional)
+-- =============================================
+=======
 
 -- Datos de ejemplo (opcional)
+>>>>>>> 541cdaefe9f9066656415c2607aa24a2e3b3801e
 IF NOT EXISTS (SELECT 1 FROM Laboratories)
 BEGIN
     INSERT INTO Laboratories (Name, Building, Floor, Capacity, IsActive, CreatedAtUtc, UpdatedAtUtc)

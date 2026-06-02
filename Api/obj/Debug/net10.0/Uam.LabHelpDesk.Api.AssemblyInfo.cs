@@ -11,10 +11,11 @@
 using System;
 using System.Reflection;
 
+[assembly: Microsoft.Extensions.Configuration.UserSecrets.UserSecretsIdAttribute("6b05be59-25f4-4af2-a769-15f63c6df649")]
 [assembly: System.Reflection.AssemblyCompanyAttribute("Uam.LabHelpDesk.Api")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+57927b550d1b6bec9494689248b6eb1b6f1433c1")]
 [assembly: System.Reflection.AssemblyProductAttribute("Uam.LabHelpDesk.Api")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Uam.LabHelpDesk.Api")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
