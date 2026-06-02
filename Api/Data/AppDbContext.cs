@@ -1,0 +1,63 @@
+using Microsoft.EntityFrameworkCore;
+using Uam.LabHelpDesk.Api.Models;
+
+namespace Uam.LabHelpDesk.Api.Data;
+
+/// <summary>
+/// Contexto principal de Entity Framework Core para la API de UAM Lab Help Desk.
+/// </summary>
+public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
+{
+    /// <summary>
+    /// Tabla lógica de laboratorios.
+    /// </summary>
+    public DbSet<Laboratory> Laboratories => Set<Laboratory>();
+
+    /// <summary>
+    /// Tabla lógica de equipos.
+    /// </summary>
+    public DbSet<Equipment> Equipment => Set<Equipment>();
+
+    /// <summary>
+    /// Configuración del modelo de datos (tablas, llaves, índices y restricciones).
+    /// </summary>
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Laboratory>(entity =>
+        {
+            entity.ToTable("Laboratories");
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Name).HasMaxLength(100).IsRequired();
+            entity.HasIndex(x => x.Name).IsUnique();
+            entity.Property(x => x.Building).HasMaxLength(50).IsRequired();
+            entity.Property(x => x.Floor).IsRequired();
+            entity.Property(x => x.Capacity).IsRequired();
+            entity.Property(x => x.IsActive).HasDefaultValue(true).IsRequired();
+            entity.Property(x => x.CreatedAtUtc).IsRequired();
+            entity.Property(x => x.UpdatedAtUtc).IsRequired();
+        });
+
+        modelBuilder.Entity<Equipment>(entity =>
+        {
+            entity.ToTable("Equipment");
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Code).HasMaxLength(20).IsRequired();
+            entity.HasIndex(x => x.Code).IsUnique();
+            entity.Property(x => x.Brand).HasMaxLength(50).IsRequired();
+            entity.Property(x => x.Model).HasMaxLength(50).IsRequired();
+            entity.Property(x => x.SerialNumber).HasMaxLength(50).IsRequired();
+            entity.HasIndex(x => x.SerialNumber).IsUnique();
+            entity.Property(x => x.Type).HasMaxLength(30).IsRequired();
+            entity.Property(x => x.Status).HasMaxLength(20).IsRequired();
+            entity.Property(x => x.PurchaseDate).IsRequired(false);
+            entity.Property(x => x.IsActive).HasDefaultValue(true).IsRequired();
+            entity.Property(x => x.CreatedAtUtc).IsRequired();
+            entity.Property(x => x.UpdatedAtUtc).IsRequired();
+
+            entity.HasOne(x => x.Laboratory)
+                  .WithMany(l => l.Equipments)
+                  .HasForeignKey(x => x.LaboratoryId)
+                  .OnDelete(DeleteBehavior.Restrict);
+        });
+    }
+}
