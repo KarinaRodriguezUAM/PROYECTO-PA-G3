@@ -1,0 +1,15 @@
+[
+  {
+    "Name": "New Profile",
+    "Projects": [
+      {
+        "Path": "..\\..\\PROYECTO-PA-G3\\MvcClient\\Uam.LabHelpDesk.MvcClient.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "..\\..\\PROYECTO-PA-G3\\Api\\Uam.LabHelpDesk.Api.csproj",
+        "Action": "Start"
+      }
+    ]
+  }
+]
