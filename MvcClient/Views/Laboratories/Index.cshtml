@@ -132,12 +132,22 @@
 
     async function saveLaboratory() {
         const id = parseInt(document.getElementById('labId').value);
-        const dto = {
-            name: document.getElementById('labName').value,
-            building: document.getElementById('labBuilding').value,
-            floor: parseInt(document.getElementById('labFloor').value),
-            capacity: parseInt(document.getElementById('labCapacity').value)
-        };
+        const name = document.getElementById('labName').value.trim();
+        const building = document.getElementById('labBuilding').value.trim();
+        const floor = document.getElementById('labFloor').value;
+        const capacity = document.getElementById('labCapacity').value;
+
+    if (!name || !building || !floor || !capacity) {
+        showAlert('warning', 'Todos los campos son obligatorios.');
+        return;
+    }
+
+       const dto = {
+    name: name,
+    building: building,
+    floor: parseInt(floor),
+    capacity: parseInt(capacity)
+};
 
         const url = id === 0 ? '/Laboratories/Create' : `/Laboratories/Update?id=${id}`;
         const method = id === 0 ? 'POST' : 'PUT';
