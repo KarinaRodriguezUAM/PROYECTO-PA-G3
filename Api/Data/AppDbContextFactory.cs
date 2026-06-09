@@ -15,7 +15,7 @@ public class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbContext>
     {
         var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
         optionsBuilder.UseSqlServer(
-            "Server=.\\SQLEXPRESS;Database=UamLabHelpDeskDb;Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=true");
+    "Server=localhost;Database=UamLabHelpDeskDb;User Id=sa;Password=Batman2025;TrustServerCertificate=True");
         return new AppDbContext(optionsBuilder.Options);
     }
 }

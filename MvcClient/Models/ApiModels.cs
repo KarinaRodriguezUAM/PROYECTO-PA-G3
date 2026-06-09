@@ -81,3 +81,50 @@ public class EquipmentUpsertDto
     public string Status { get; set; } = string.Empty;
     public string? PurchaseDate { get; set; }
 }
+/// <summary>
+/// DTO de lectura para Roles.
+/// </summary>
+public class RoleDto
+{
+    public int Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string? Description { get; set; }
+    public bool IsActive { get; set; }
+    public DateTime CreatedAtUtc { get; set; }
+    public DateTime UpdatedAtUtc { get; set; }
+}
+
+/// <summary>
+/// DTO para crear o actualizar Roles.
+/// </summary>
+public class RoleUpsertDto
+{
+    public string Name { get; set; } = string.Empty;
+    public string? Description { get; set; }
+}
+
+/// <summary>
+/// DTO de lectura para Users.
+/// </summary>
+public class UserDto
+{
+    public int Id { get; set; }
+    public int RoleId { get; set; }
+    public string RoleName { get; set; } = string.Empty;
+    public string FirstName { get; set; } = string.Empty;
+    public string LastName { get; set; } = string.Empty;
+    public string Email { get; set; } = string.Empty;
+    public bool IsActive { get; set; }
+}
+
+/// <summary>
+/// DTO para crear o actualizar Users.
+/// </summary>
+public class UserUpsertDto
+{
+    public int RoleId { get; set; }
+    public string FirstName { get; set; } = string.Empty;
+    public string LastName { get; set; } = string.Empty;
+    public string Email { get; set; } = string.Empty;
+    public string Password { get; set; } = string.Empty;
+}

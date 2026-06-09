@@ -3,37 +3,179 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - UAM Lab Help Desk</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-</head>
-<body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container">
-            <a class="navbar-brand fw-bold" asp-controller="Laboratories" asp-action="Index">
-                🔬 UAM Lab Help Desk
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav">
-                    <li class="nav-item">
-                        <a class="nav-link" asp-controller="Laboratories" asp-action="Index">Laboratorios</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" asp-controller="Equipment" asp-action="Index">Equipos</a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </nav>
 
-    <div class="container mt-4">
-        @RenderBody()
+    <title>@ViewData["Title"] - UAM Lab Help Desk</title>
+
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+
+    <link rel="stylesheet"
+          href="~/css/site.css"
+          asp-append-version="true" />
+
+    <style>
+
+            body {
+                margin: 0;
+                background: #eef2f7;
+                font-family: 'Segoe UI',sans-serif;
+            }
+
+            .sidebar {
+                width: 300px;
+                height: 100vh;
+                position: fixed;
+                left: 0;
+                top: 0;
+                background: #0f172a;
+                color: white;
+            }
+
+            .sidebar-header {
+                padding: 28px;
+                font-size: 28px;
+                font-weight: 700;
+                border-bottom: 1px solid #1e293b;
+            }
+
+            .sidebar-menu {
+                list-style: none;
+                margin: 0;
+                padding: 10px 0;
+            }
+
+                .sidebar-menu li a {
+                    display: block;
+                    color: #e5e7eb;
+                    text-decoration: none;
+                    padding: 18px 28px;
+                    font-size: 21px;
+                    font-weight: 500;
+                }
+
+                    .sidebar-menu li a:hover {
+                        background: #1e293b;
+                        color: white;
+                    }
+
+                    .sidebar-menu li a i {
+                        margin-right: 14px;
+                    }
+
+            .main-content {
+                margin-left: 300px;
+                min-height: 100vh;
+            }
+
+            .topbar {
+                height: 75px;
+                background: white;
+                border-bottom: 1px solid #dbe2ea;
+                display: flex;
+                justify-content: flex-end;
+                align-items: center;
+                padding: 0 35px;
+            }
+
+            .content-wrapper {
+                padding: 40px;
+            }
+
+            .user-info {
+                text-align: right;
+            }
+
+                .user-info .name {
+                    font-weight: 700;
+                }
+
+                .user-info .email {
+                    color: #6b7280;
+                    font-size: 14px;
+                }
+
+            footer {
+                text-align: center;
+                padding: 25px;
+                color: #6b7280;
+            }
+
+    </style>
+
+</head>
+
+<body>
+
+    <div class="sidebar">
+
+        <div class="sidebar-header">
+            <i class="bi bi-headset"></i>
+            UAM Help Desk
+        </div>
+
+        <ul class="sidebar-menu">
+
+            <li>
+                <a asp-controller="Home" asp-action="Index">
+                    <i class="bi bi-speedometer2"></i> Inicio
+                </a>
+            </li>
+
+            <li>
+                <a asp-controller="Laboratories" asp-action="Index">
+                    <i class="bi bi-building"></i> Laboratorios
+                </a>
+            </li>
+
+            <li>
+                <a asp-controller="Equipment" asp-action="Index">
+                    <i class="bi bi-pc-display"></i> Equipos
+                </a>
+            </li>
+
+            <li>
+                <a asp-controller="Users" asp-action="Index">
+                    <i class="bi bi-people"></i> Usuarios
+                </a>
+            </li>
+
+            <li>
+                <a asp-controller="Roles" asp-action="Index">
+                    <i class="bi bi-shield-lock"></i> Roles
+                </a>
+            </li>
+
+        </ul>
+
+    </div>
+
+    <div class="main-content">
+
+        <div class="topbar">
+
+            <div class="user-info">
+                <div class="name">Administrador</div>
+                <div class="email">admin@uam.edu</div>
+            </div>
+
+        </div>
+
+        <div class="content-wrapper">
+            @RenderBody()
+        </div>
+
+        <footer>
+            © 2026 UAM Lab Help Desk | Desarrollado por Grupo 1 Programación Avanzada
+        </footer>
+
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
     @await RenderSectionAsync("Scripts", required: false)
+
 </body>
 </html>

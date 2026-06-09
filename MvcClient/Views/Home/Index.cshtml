@@ -1,0 +1,209 @@
+﻿@{
+    ViewData["Title"] = "Inicio";
+}
+
+<div class="text-center mb-5">
+
+    <h1 style="
+        font-size:72px;
+        font-weight:800;
+        color:#0f2d6b;">
+        UAM Lab Help Desk
+    </h1>
+
+    <p style="
+        font-size:24px;
+        color:#6b7280;">
+        Plataforma centralizada para la administración de laboratorios,
+        equipos tecnológicos y usuarios.
+    </p>
+
+</div>
+
+<div class="row g-4">
+
+    <div class="col-md-3">
+
+        <div class="card">
+
+            <div class="card-body">
+
+                <small class="text-muted text-uppercase">
+                    Laboratorios
+                </small>
+
+                <h1 id="totalLabs"
+                    style="font-size:52px;font-weight:700;color:#0f2d6b;">
+                    0
+                </h1>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="col-md-3">
+
+        <div class="card">
+
+            <div class="card-body">
+
+                <small class="text-muted text-uppercase">
+                    Equipos
+                </small>
+
+                <h1 id="totalEquipment"
+                    style="font-size:52px;font-weight:700;color:#0f2d6b;">
+                    0
+                </h1>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="col-md-3">
+
+        <div class="card">
+
+            <div class="card-body">
+
+                <small class="text-muted text-uppercase">
+                    Usuarios
+                </small>
+
+                <h1 id="totalUsers"
+                    style="font-size:52px;font-weight:700;color:#0f2d6b;">
+                    0
+                </h1>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="col-md-3">
+
+        <div class="card">
+
+            <div class="card-body">
+
+                <small class="text-muted text-uppercase">
+                    Roles
+                </small>
+
+                <h1 id="totalRoles"
+                    style="font-size:52px;font-weight:700;color:#0f2d6b;">
+                    0
+                </h1>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<div class="mt-5">
+
+    <div class="card overflow-hidden">
+
+        <div style="position:relative;">
+
+            <img src="~/images/helpdesk-banner.jpg"
+                 style="
+            width:100%;
+            height:550px;
+            object-fit:cover;" />
+
+            <div style="
+                position:absolute;
+                top:0;
+                left:0;
+                width:100%;
+                height:100%;
+                background:rgba(0,0,0,.45);
+                display:flex;
+                flex-direction:column;
+                justify-content:center;
+                align-items:center;
+                color:white;">
+
+              
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+@section Scripts {
+
+    <script>
+
+        async function loadDashboard(){
+
+            try{
+
+                const labs =
+                    await fetch('/Laboratories/GetAll')
+                    .then(r => r.json());
+
+                document.getElementById('totalLabs').innerText =
+                    labs?.length ?? 0;
+
+            }catch{
+                document.getElementById('totalLabs').innerText = '0';
+            }
+
+            try{
+
+                const equipment =
+                    await fetch('/Equipment/GetAll')
+                    .then(r => r.json());
+
+                document.getElementById('totalEquipment').innerText =
+                    equipment?.length ?? 0;
+
+            }catch{
+                document.getElementById('totalEquipment').innerText = '0';
+            }
+
+            try{
+
+                const users =
+                    await fetch('/Users/GetAll')
+                    .then(r => r.json());
+
+                document.getElementById('totalUsers').innerText =
+                    users?.length ?? 0;
+
+            }catch{
+                document.getElementById('totalUsers').innerText = '0';
+            }
+
+            try{
+
+                const roles =
+                    await fetch('/Roles/GetAll')
+                    .then(r => r.json());
+
+                document.getElementById('totalRoles').innerText =
+                    roles?.length ?? 0;
+
+            }catch{
+                document.getElementById('totalRoles').innerText = '0';
+            }
+        }
+
+        loadDashboard();
+
+    </script>
+
+}

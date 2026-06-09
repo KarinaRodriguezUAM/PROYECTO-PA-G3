@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="../../PROYECTO-PA-G3/Api/Uam.LabHelpDesk.Api.csproj" />
+  <Project Path="../../PROYECTO-PA-G3/MvcClient/Uam.LabHelpDesk.MvcClient.csproj" />
+</Solution>

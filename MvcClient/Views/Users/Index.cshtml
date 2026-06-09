@@ -1,0 +1,402 @@
+﻿@{
+    ViewData["Title"] = "Usuarios";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+
+    <div>
+        <h2 class="fw-bold mb-1">
+            Gestión de Usuarios
+        </h2>
+
+        <p class="text-muted mb-0">
+            Administración de usuarios y permisos del sistema
+        </p>
+    </div>
+
+    <button class="btn btn-dark px-4"
+            onclick="openCreateModal()">
+
+        <i class="bi bi-person-plus me-2"></i>
+        Nuevo Usuario
+
+    </button>
+
+</div>
+
+<div id="alertContainer"></div>
+
+<div class="table-responsive">
+    <table class="table table-bordered table-hover">
+        <thead class="table-dark">
+            <tr>
+                <th>#</th>
+                <th>Nombre</th>
+                <th>Apellido</th>
+                <th>Email</th>
+                <th>Rol</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody id="usersBody">
+            <tr>
+                <td colspan="7" class="text-center">Cargando...</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="userModal" tabindex="-1">
+
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+
+        <div class="modal-content">
+
+            <div class="modal-header bg-dark text-white">
+
+                <h5 class="modal-title">
+                    <i class="bi bi-person-badge me-2"></i>
+                    Gestión de Usuario
+                </h5>
+
+                <button class="btn-close btn-close-white"
+                        data-bs-dismiss="modal">
+                </button>
+
+            </div>
+
+            <div class="modal-body p-4">
+
+                <input type="hidden"
+                       id="userId"
+                       value="0" />
+
+                <div class="row">
+
+                    <div class="col-md-6 mb-3">
+
+                        <label class="form-label fw-semibold">
+                            Rol
+                        </label>
+
+                        <select id="roleId"
+                                class="form-select">
+                            <option value="">
+                                Seleccione un rol
+                            </option>
+                        </select>
+
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+
+                        <label class="form-label fw-semibold">
+                            Correo Electrónico
+                        </label>
+
+                        <input id="email"
+                               class="form-control"
+                               placeholder="correo@empresa.com" />
+
+                    </div>
+
+                </div>
+
+                <div class="row">
+
+                    <div class="col-md-6 mb-3">
+
+                        <label class="form-label fw-semibold">
+                            Nombre
+                        </label>
+
+                        <input id="firstName"
+                               class="form-control"
+                               placeholder="Nombre" />
+
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+
+                        <label class="form-label fw-semibold">
+                            Apellido
+                        </label>
+
+                        <input id="lastName"
+                               class="form-control"
+                               placeholder="Apellido" />
+
+                    </div>
+
+                </div>
+
+                <div class="mb-3">
+
+                    <label class="form-label fw-semibold">
+                        Contraseña
+                    </label>
+
+                    <input id="password"
+                           type="password"
+                           class="form-control"
+                           placeholder="Ingrese la contraseña" />
+
+                </div>
+
+            </div>
+
+            <div class="modal-footer">
+
+                <button class="btn btn-outline-secondary"
+                        data-bs-dismiss="modal">
+
+                    Cancelar
+
+                </button>
+
+                <button class="btn btn-dark"
+                        onclick="saveUser()">
+
+                    <i class="bi bi-check-circle me-1"></i>
+                    Guardar
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+@section Scripts {
+
+    <script>
+
+        const userModal =
+            new bootstrap.Modal(document.getElementById('userModal'));
+
+        async function loadUsers(){
+
+            const response =
+                await fetch('/Users/GetAll');
+
+            const data =
+                response.ok ? await response.json() : [];
+
+            const tbody =
+                document.getElementById('usersBody');
+
+            if(!data.length){
+
+                tbody.innerHTML =
+                `<tr>
+                    <td colspan="7" class="text-center">
+                        No hay usuarios registrados
+                    </td>
+                </tr>`;
+
+                return;
+            }
+
+            tbody.innerHTML = data.map(u => `
+                <tr>
+                    <td>${u.id}</td>
+                    <td>${u.firstName}</td>
+                    <td>${u.lastName}</td>
+                    <td>${u.email}</td>
+                    <td>${u.roleName}</td>
+                    <td>
+                        <span class="badge ${u.isActive ? 'bg-success':'bg-secondary'}">
+                            ${u.isActive ? 'Activo':'Inactivo'}
+                        </span>
+                    </td>
+                    <td>
+                        <button class="btn btn-warning btn-sm"
+                            onclick="editUser(${u.id},${u.roleId},
+                            '${u.firstName}',
+                            '${u.lastName}',
+                            '${u.email}')">
+                            Editar
+                        </button>
+
+                        <button class="btn btn-danger btn-sm"
+                            onclick="deleteUser(${u.id})">
+                            Eliminar
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+                async function loadRoles(){
+
+            const response =
+                await fetch('/Roles/GetAll');
+
+            const roles =
+                response.ok ? await response.json() : [];
+
+            const select =
+                document.getElementById('roleId');
+
+            select.innerHTML =
+                '<option value="">Seleccione un rol</option>';
+
+            roles
+                .filter(r => r.isActive)
+                .forEach(role => {
+
+                    select.innerHTML += `
+                        <option value="${role.id}">
+                            ${role.name}
+                        </option>`;
+                });
+        }
+
+
+
+                async function openCreateModal(){
+
+            document.getElementById('userId').value = 0;
+            document.getElementById('roleId').value = '';
+            document.getElementById('firstName').value = '';
+            document.getElementById('lastName').value = '';
+            document.getElementById('email').value = '';
+            document.getElementById('password').value = '';
+
+            await loadRoles();
+
+            userModal.show();
+        }
+
+               async function editUser(id,roleId,firstName,lastName,email){
+
+            await loadRoles();
+
+            document.getElementById('userId').value = id;
+            document.getElementById('roleId').value = roleId;
+            document.getElementById('firstName').value = firstName;
+            document.getElementById('lastName').value = lastName;
+            document.getElementById('email').value = email;
+
+            document.getElementById('password').value = '';
+
+            userModal.show();
+        }
+
+        async function saveUser(){
+
+            const id =
+                parseInt(document.getElementById('userId').value);
+
+            const dto = {
+
+                roleId: parseInt(document.getElementById('roleId').value),
+                firstName: document.getElementById('firstName').value,
+                lastName: document.getElementById('lastName').value,
+                email: document.getElementById('email').value,
+                password: document.getElementById('password').value
+            };
+
+            const url =
+                id === 0
+                ? '/Users/Create'
+                : `/Users/Update?id=${id}`;
+
+            const method =
+                id === 0 ? 'POST' : 'PUT';
+
+            const response = await fetch(url,{
+                method: method,
+                headers:{'Content-Type':'application/json'},
+                body: JSON.stringify(dto)
+            });
+
+            const result = await response.json();
+
+            if(result.success){
+
+                userModal.hide();
+                loadUsers();
+                showAlert('success', result.message);
+            }
+            else{
+
+                showAlert('danger', result.message);
+            }
+        }
+
+        async function deleteUser(id){
+
+            if(!confirm('¿Eliminar usuario?'))
+                return;
+
+            const response =
+                await fetch(`/Users/Delete?id=${id}`,{
+                    method:'DELETE'
+                });
+
+            const result = await response.json();
+
+            if(result.success){
+
+                loadUsers();
+                showAlert('success', result.message);
+            }
+            else{
+
+                showAlert('danger', result.message);
+            }
+        }
+
+        function showAlert(type,message){
+
+            document.getElementById('alertContainer').innerHTML =
+            `<div class="alert alert-${type}">
+                ${message}
+            </div>`;
+        }
+
+        loadUsers();
+        loadRoles();
+
+    </script>
+
+
+    <style>
+
+        .table {
+            background: white;
+        }
+
+        .modal-content {
+            border-radius: 14px;
+        }
+
+        .form-control,
+        .form-select {
+            border-radius: 8px;
+        }
+
+            .form-control:focus,
+            .form-select:focus {
+                box-shadow: 0 0 0 .15rem rgba(15,23,42,.15);
+            }
+
+        .btn-dark {
+            background: #0f172a;
+            border-color: #0f172a;
+        }
+
+            .btn-dark:hover {
+                background: #1e293b;
+                border-color: #1e293b;
+            }
+
+    </style>
+
+}

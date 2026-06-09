@@ -2,9 +2,26 @@
     ViewData["Title"] = "Equipos";
 }
 
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h2>🖥️ Equipos</h2>
-    <button class="btn btn-primary" onclick="openCreateModal()">+ Nuevo Equipo</button>
+<div class="d-flex justify-content-between align-items-center mb-4">
+
+    <div>
+        <h2 class="fw-bold mb-1">
+            Gestión de Equipos
+        </h2>
+
+        <p class="text-muted mb-0">
+            Administración y control de equipos tecnológicos
+        </p>
+    </div>
+
+    <button class="btn btn-dark px-4"
+            onclick="openCreateModal()">
+
+        <i class="bi bi-pc-display me-2"></i>
+        Nuevo Equipo
+
+    </button>
+
 </div>
 
 <div id="alertContainer"></div>
@@ -34,9 +51,12 @@
 <div class="modal fade" id="eqModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <div class="modal-header">
+
+
+            <div class="modal-header bg-dark text-white">
                 <h5 class="modal-title" id="eqModalTitle">Equipo</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <button type="button"
+                        class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
                 <input type="hidden" id="eqId" value="0" />
@@ -74,11 +94,12 @@
                     </div>
                     <div class="col-md-6 mb-3">
                         <label class="form-label">Estado <span class="text-danger">*</span></label>
+
                         <select class="form-select" id="eqStatus">
                             <option value="">Seleccione...</option>
-                            <option value="Operational">Operational</option>
-                            <option value="UnderRepair">UnderRepair</option>
-                            <option value="Decommissioned">Decommissioned</option>
+                            <option value="Operational">Operativo</option>
+                            <option value="UnderRepair">En Reparacion</option>
+                            <option value="Decommissioned">Fuera de Servicio</option>
                         </select>
                     </div>
                     <div class="col-md-6 mb-3">
@@ -99,9 +120,11 @@
 <div class="modal fade" id="detailModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
-            <div class="modal-header">
+
+            <div class="modal-header bg-dark text-white">
                 <h5 class="modal-title">Detalle del Equipo</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <button type="button"
+        class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body" id="detailBody">Cargando...</div>
             <div class="modal-footer">
@@ -132,12 +155,16 @@
                 <td>${e.brand}</td>
                 <td>${e.model}</td>
                 <td>${e.type}</td>
-                <td><span class="badge ${e.status==='Operational'?'bg-success':e.status==='UnderRepair'?'bg-warning text-dark':'bg-secondary'}">${e.status}</span></td>
+                    <td><span class="badge ${e.status==='Operational'?'bg-success':e.status==='UnderRepair'?'bg-warning text-dark':'bg-secondary'}">${e.status === 'Operational'
+        ? 'Operativo'
+        : e.status === 'UnderRepair'
+            ? 'En Reparación'
+            : 'Fuera de Servicio'}</span></td>
                 <td><span class="badge ${e.isActive?'bg-success':'bg-secondary'}">${e.isActive?'Activo':'Inactivo'}</span></td>
                 <td>
-                    <button class="btn btn-sm btn-info" onclick="showDetail(${e.id})">Ver</button>
-                    <button class="btn btn-sm btn-warning" onclick="openEditModal(${JSON.stringify(e).replace(/"/g,'&quot;')})">Editar</button>
-                    <button class="btn btn-sm btn-danger" onclick="deleteEquipment(${e.id})">Eliminar</button>
+                <button class="btn btn-sm btn-outline-dark" onclick="showDetail(${e.id})">Ver</button>
+                <button class="btn btn-sm btn-outline-primary" onclick="openEditModal(${JSON.stringify(e).replace(/"/g,'&quot;')})">Editar</button>
+                <button class="btn btn-sm btn-danger" onclick="deleteEquipment(${e.id})">Eliminar</button>
                 </td>
             </tr>`).join('');
     }
@@ -255,4 +282,40 @@
 
     loadEquipment();
 </script>
+
+<style>
+
+.table{
+    background:white;
+}
+
+.card{
+    border:none;
+    border-radius:16px;
+    box-shadow:0 10px 25px rgba(0,0,0,.06);
+}
+
+.modal-content{
+    border-radius:16px;
+}
+
+.form-control,
+.form-select{
+    border-radius:10px;
+}
+
+.btn-dark{
+    background:#0f172a;
+    border-color:#0f172a;
+}
+
+.btn-dark:hover{
+    background:#1e293b;
+    border-color:#1e293b;
+}
+
+</style>
+
+
+
 }
