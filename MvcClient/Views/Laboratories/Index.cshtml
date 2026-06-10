@@ -242,26 +242,43 @@
             }
         }
 
-        async function deleteLaboratory(id) {
-            if (!confirm('¿Desea eliminar este laboratorio?')) return;
-            try {
-                const res = await fetch(`/Laboratories/Delete?id=${id}`, { method: 'DELETE' });
-                const data = await res.json();
-                console.log('Delete Response:', data);
-                if (data.success === true) {
-                    showAlert('success', data.message || 'Laboratorio eliminado.');
-                    loadLaboratories();
-                    // Notificar a la página de Equipos que los laboratorios han cambiado
-                    sessionStorage.setItem('laboratoriesUpdated', Date.now().toString());
-                    window.dispatchEvent(new CustomEvent('laboratoriesUpdated'));
-                } else {
-                    showAlert('danger', data.message || 'Error al eliminar.' + (data.details ? ' - ' + data.details : ''));
-                }
-            } catch (error) {
-                console.error('Error en deleteLaboratory:', error);
-                showAlert('danger', 'Error al eliminar: ' + error.message);
+                         
+        function deleteLaboratory(id){
+
+    showDeleteConfirmation(
+        '¿Está seguro de que desea eliminar este laboratorio?',
+        async () => {
+
+            const response =
+                await fetch(`/Laboratories/Delete?id=${id}`,{
+                    method:'DELETE'
+                });
+
+            const result = await response.json();
+
+            if(result.success){
+
+                loadLaboratories();
+                showAlert('success', result.message);
+            }
+            else{
+
+                showAlert('danger', result.message);
             }
         }
+    );
+}
+
+
+
+
+
+
+
+
+
+
+
 
         async function showDetail(id) {
             document.getElementById('detailBody').innerHTML = 'Cargando...';
@@ -301,11 +318,26 @@
                 </table>`;
         }
 
-        function showAlert(type, msg) {
-            const c = document.getElementById('alertContainer');
-            c.innerHTML = `<div class="alert alert-${type} alert-dismissible fade show" role="alert">
-                ${msg}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>`;
-        }
+        function showAlert(type,message){
+
+    const container =
+        document.getElementById('alertContainer');
+
+    container.innerHTML =
+    `
+    <div class="alert alert-${type} alert-dismissible fade show">
+        ${message}
+        <button type="button"
+                class="btn-close"
+                data-bs-dismiss="alert">
+        </button>
+    </div>
+    `;
+
+    setTimeout(() => {
+        container.innerHTML = '';
+    }, 4000);
+}
 
         loadLaboratories();
     </script>

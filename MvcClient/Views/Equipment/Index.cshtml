@@ -204,16 +204,29 @@
     async function saveEquipment() {
         const id = parseInt(document.getElementById('eqId').value);
         const purchaseRaw = document.getElementById('eqPurchaseDate').value;
-        const dto = {
-            laboratoryId: parseInt(document.getElementById('eqLaboratoryId').value),
-            code: document.getElementById('eqCode').value,
-            brand: document.getElementById('eqBrand').value,
-            model: document.getElementById('eqModel').value,
-            serialNumber: document.getElementById('eqSerial').value,
-            type: document.getElementById('eqType').value,
-            status: document.getElementById('eqStatus').value,
-            purchaseDate: purchaseRaw || null
-        };
+       const laboratoryId = document.getElementById('eqLaboratoryId').value;
+            const code = document.getElementById('eqCode').value.trim();
+            const brand = document.getElementById('eqBrand').value.trim();
+            const model = document.getElementById('eqModel').value.trim();
+            const serial = document.getElementById('eqSerial').value.trim();
+            const type = document.getElementById('eqType').value;
+            const status = document.getElementById('eqStatus').value;
+            const dto = {
+                laboratoryId: parseInt(laboratoryId),
+                code: code,
+                brand: brand,
+                model: model,
+                serialNumber: serial,
+                type: type,
+                status: status,
+                purchaseDate: purchaseRaw || null
+            };
+
+
+if (!laboratoryId || !code || !brand || !model || !serial || !type || !status) {
+    showAlert('warning', 'Debe completar todos los campos obligatorios.');
+    return;
+}
 
         const url = id === 0 ? '/Equipment/Create' : `/Equipment/Update?id=${id}`;
         const method = id === 0 ? 'POST' : 'PUT';
@@ -232,17 +245,45 @@
         }
     }
 
-    async function deleteEquipment(id) {
-        if (!confirm('¿Desea eliminar este equipo?')) return;
-        const res = await fetch(`/Equipment/Delete?id=${id}`, { method: 'DELETE' });
-        const data = await res.json();
-        if (res.ok) {
-            showAlert('success', data.message || 'Equipo eliminado.');
-            loadEquipment();
-        } else {
-            showAlert('danger', data.message || 'Error al eliminar.');
+            function deleteEquipment(id){
+
+            showDeleteConfirmation(
+                '¿Está seguro de que desea eliminar este equipo?',
+                async () => {
+
+                    const response =
+                        await fetch(`/Equipment/Delete?id=${id}`,{
+                            method:'DELETE'
+                        });
+
+                    const result = await response.json();
+
+                    if(result.success){
+
+                        loadEquipment();
+                        showAlert('success', result.message);
+                    }
+                    else{
+
+                        showAlert('danger', result.message);
+                    }
+                }
+            );
         }
-    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     async function showDetail(id) {
         document.getElementById('detailBody').innerHTML = 'Cargando...';
@@ -266,13 +307,28 @@
             </dl>`;
     }
 
-    function showAlert(type, msg) {
-        const c = document.getElementById('alertContainer');
-        c.innerHTML = `<div class="alert alert-${type} alert-dismissible fade show" role="alert">
-            ${msg}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>`;
-    }
+            function showAlert(type,message){
 
-    // Escuchar cambios en laboratorios desde otra página
+            const container =
+                document.getElementById('alertContainer');
+
+            container.innerHTML =
+            `
+            <div class="alert alert-${type} alert-dismissible fade show">
+                ${message}
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="alert">
+                </button>
+            </div>
+            `;
+
+            setTimeout(() => {
+                container.innerHTML = '';
+            }, 4000);
+        }
+
+    
     window.addEventListener('laboratoriesUpdated', async () => {
         const selectedId = parseInt(document.getElementById('eqLaboratoryId').value) || 0;
         if (selectedId || document.getElementById('eqModal').classList.contains('show')) {

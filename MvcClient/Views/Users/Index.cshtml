@@ -293,14 +293,39 @@
             const id =
                 parseInt(document.getElementById('userId').value);
 
-            const dto = {
+                    const roleId =
+            document.getElementById('roleId').value;
 
-                roleId: parseInt(document.getElementById('roleId').value),
-                firstName: document.getElementById('firstName').value,
-                lastName: document.getElementById('lastName').value,
-                email: document.getElementById('email').value,
-                password: document.getElementById('password').value
-            };
+        const firstName =
+            document.getElementById('firstName').value.trim();
+
+        const lastName =
+            document.getElementById('lastName').value.trim();
+
+        const email =
+            document.getElementById('email').value.trim();
+
+        const password =
+            document.getElementById('password').value.trim();
+
+        if (!roleId || !firstName || !lastName || !email || !password) {
+
+            showAlert(
+                'warning',
+                'Todos los campos son obligatorios.'
+            );
+
+            return;
+        }
+
+        const dto = {
+
+            roleId: parseInt(roleId),
+            firstName: firstName,
+            lastName: lastName,
+            email: email,
+            password: password
+        };
 
             const url =
                 id === 0
@@ -330,35 +355,57 @@
             }
         }
 
-        async function deleteUser(id){
+        
+                function deleteUser(id){
 
-            if(!confirm('¿Eliminar usuario?'))
-                return;
+            showDeleteConfirmation(
+                '¿Está seguro de que desea eliminar este usuario?',
+                async () => {
 
-            const response =
-                await fetch(`/Users/Delete?id=${id}`,{
-                    method:'DELETE'
-                });
+                    const response =
+                        await fetch(`/Users/Delete?id=${id}`,{
+                            method:'DELETE'
+                        });
 
-            const result = await response.json();
+                    const result = await response.json();
 
-            if(result.success){
+                    if(result.success){
 
-                loadUsers();
-                showAlert('success', result.message);
-            }
-            else{
+                        loadUsers();
+                        showAlert('success', result.message);
+                    }
+                    else{
 
-                showAlert('danger', result.message);
-            }
+                        showAlert('danger', result.message);
+                    }
+                }
+            );
         }
 
-        function showAlert(type,message){
 
-            document.getElementById('alertContainer').innerHTML =
-            `<div class="alert alert-${type}">
+
+
+
+
+                function showAlert(type,message){
+
+            const container =
+                document.getElementById('alertContainer');
+
+            container.innerHTML =
+            `
+            <div class="alert alert-${type} alert-dismissible fade show">
                 ${message}
-            </div>`;
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="alert">
+                </button>
+            </div>
+            `;
+
+            setTimeout(() => {
+                container.innerHTML = '';
+            }, 4000);
         }
 
         loadUsers();

@@ -192,14 +192,30 @@
             roleModal.show();
         }
 
-        async function saveRole(){
+                async function saveRole(){
 
             const id =
                 parseInt(document.getElementById('roleId').value);
 
+            const name =
+                document.getElementById('roleName').value.trim();
+
+            const description =
+                document.getElementById('roleDescription').value.trim();
+
+            if (!name || !description) {
+
+                showAlert(
+                    'warning',
+                    'Todos los campos son obligatorios.'
+                );
+
+                return;
+            }
+
             const dto = {
-                name: document.getElementById('roleName').value,
-                description: document.getElementById('roleDescription').value
+                name: name,
+                description: description
             };
 
             const url =
@@ -233,10 +249,11 @@
             }
         }
 
-        async function deleteRole(id){
+        function deleteRole(id){
 
-            if(!confirm('¿Eliminar rol?'))
-                return;
+    showDeleteConfirmation(
+        '¿Está seguro de que desea eliminar este rol?',
+        async () => {
 
             const response =
                 await fetch(`/Roles/Delete?id=${id}`,{
@@ -248,22 +265,40 @@
             if(result.success){
 
                 loadRoles();
-                showAlert('success',result.message);
+                showAlert('success', result.message);
             }
             else{
 
-                showAlert('danger',result.message);
+                showAlert('danger', result.message);
             }
         }
+    );
+}
+        
 
-        function showAlert(type,message){
 
-            document.getElementById('alertContainer').innerHTML =
+
+
+
+                function showAlert(type,message){
+
+            const container =
+                document.getElementById('alertContainer');
+
+            container.innerHTML =
             `
-            <div class="alert alert-${type}">
+            <div class="alert alert-${type} alert-dismissible fade show">
                 ${message}
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="alert">
+                </button>
             </div>
             `;
+
+            setTimeout(() => {
+                container.innerHTML = '';
+            }, 4000);
         }
 
         loadRoles();

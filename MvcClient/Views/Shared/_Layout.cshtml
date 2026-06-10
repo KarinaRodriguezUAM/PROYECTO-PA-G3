@@ -168,12 +168,76 @@
         </div>
 
         <footer>
-            © 2026 UAM Lab Help Desk | Desarrollado por Grupo 1 Programación Avanzada
+            © 2026 UAM Lab Help Desk | Desarrollado por Grupo 3 Programación Avanzada
         </footer>
 
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Modal Confirmación -->
+    <div class="modal fade" id="confirmModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">
+                        Confirmar eliminación
+                    </h5>
+
+                    <button type="button"
+                            class="btn-close btn-close-white"
+                            data-bs-dismiss="modal">
+                    </button>
+                </div>
+
+                <div class="modal-body" id="confirmMessage">
+                    ¿Está seguro?
+                </div>
+
+                <div class="modal-footer">
+
+                    <button class="btn btn-secondary"
+                            data-bs-dismiss="modal">
+                        Cancelar
+                    </button>
+
+                    <button class="btn btn-danger"
+                            id="confirmDeleteBtn">
+                        Eliminar
+                    </button>
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+
+        const confirmModal =
+        new bootstrap.Modal(
+        document.getElementById('confirmModal')
+        );
+
+        function showDeleteConfirmation(message, callback){
+
+        document.getElementById('confirmMessage').textContent =
+        message;
+
+        const button =
+        document.getElementById('confirmDeleteBtn');
+
+        button.onclick = () => {
+
+        confirmModal.hide();
+        callback();
+        };
+
+        confirmModal.show();
+        }
+
+    </script>
 
     @await RenderSectionAsync("Scripts", required: false)
 
