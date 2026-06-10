@@ -2,9 +2,26 @@
     ViewData["Title"] = "Equipos";
 }
 
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h2>🖥️ Equipos</h2>
-    <button class="btn btn-primary" onclick="openCreateModal()">+ Nuevo Equipo</button>
+<div class="d-flex justify-content-between align-items-center mb-4">
+
+    <div>
+        <h2 class="fw-bold mb-1">
+            Gestión de Equipos
+        </h2>
+
+        <p class="text-muted mb-0">
+            Administración y control de equipos tecnológicos
+        </p>
+    </div>
+
+    <button class="btn btn-dark px-4"
+            onclick="openCreateModal()">
+
+        <i class="bi bi-pc-display me-2"></i>
+        Nuevo Equipo
+
+    </button>
+
 </div>
 
 <div id="alertContainer"></div>
@@ -34,9 +51,12 @@
 <div class="modal fade" id="eqModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <div class="modal-header">
+
+
+            <div class="modal-header bg-dark text-white">
                 <h5 class="modal-title" id="eqModalTitle">Equipo</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <button type="button"
+                        class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
                 <input type="hidden" id="eqId" value="0" />
@@ -74,11 +94,12 @@
                     </div>
                     <div class="col-md-6 mb-3">
                         <label class="form-label">Estado <span class="text-danger">*</span></label>
+
                         <select class="form-select" id="eqStatus">
                             <option value="">Seleccione...</option>
-                            <option value="Operational">Operational</option>
-                            <option value="UnderRepair">UnderRepair</option>
-                            <option value="Decommissioned">Decommissioned</option>
+                            <option value="Operational">Operativo</option>
+                            <option value="UnderRepair">En Reparacion</option>
+                            <option value="Decommissioned">Fuera de Servicio</option>
                         </select>
                     </div>
                     <div class="col-md-6 mb-3">
@@ -99,9 +120,11 @@
 <div class="modal fade" id="detailModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
-            <div class="modal-header">
+
+            <div class="modal-header bg-dark text-white">
                 <h5 class="modal-title">Detalle del Equipo</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <button type="button"
+        class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body" id="detailBody">Cargando...</div>
             <div class="modal-footer">
@@ -132,12 +155,16 @@
                 <td>${e.brand}</td>
                 <td>${e.model}</td>
                 <td>${e.type}</td>
-                <td><span class="badge ${e.status==='Operational'?'bg-success':e.status==='UnderRepair'?'bg-warning text-dark':'bg-secondary'}">${e.status}</span></td>
+                    <td><span class="badge ${e.status==='Operational'?'bg-success':e.status==='UnderRepair'?'bg-warning text-dark':'bg-secondary'}">${e.status === 'Operational'
+        ? 'Operativo'
+        : e.status === 'UnderRepair'
+            ? 'En Reparación'
+            : 'Fuera de Servicio'}</span></td>
                 <td><span class="badge ${e.isActive?'bg-success':'bg-secondary'}">${e.isActive?'Activo':'Inactivo'}</span></td>
                 <td>
-                    <button class="btn btn-sm btn-info" onclick="showDetail(${e.id})">Ver</button>
-                    <button class="btn btn-sm btn-warning" onclick="openEditModal(${JSON.stringify(e).replace(/"/g,'&quot;')})">Editar</button>
-                    <button class="btn btn-sm btn-danger" onclick="deleteEquipment(${e.id})">Eliminar</button>
+                <button class="btn btn-sm btn-outline-dark" onclick="showDetail(${e.id})">Ver</button>
+                <button class="btn btn-sm btn-outline-primary" onclick="openEditModal(${JSON.stringify(e).replace(/"/g,'&quot;')})">Editar</button>
+                <button class="btn btn-sm btn-danger" onclick="deleteEquipment(${e.id})">Eliminar</button>
                 </td>
             </tr>`).join('');
     }
@@ -177,16 +204,29 @@
     async function saveEquipment() {
         const id = parseInt(document.getElementById('eqId').value);
         const purchaseRaw = document.getElementById('eqPurchaseDate').value;
-        const dto = {
-            laboratoryId: parseInt(document.getElementById('eqLaboratoryId').value),
-            code: document.getElementById('eqCode').value,
-            brand: document.getElementById('eqBrand').value,
-            model: document.getElementById('eqModel').value,
-            serialNumber: document.getElementById('eqSerial').value,
-            type: document.getElementById('eqType').value,
-            status: document.getElementById('eqStatus').value,
-            purchaseDate: purchaseRaw || null
-        };
+       const laboratoryId = document.getElementById('eqLaboratoryId').value;
+            const code = document.getElementById('eqCode').value.trim();
+            const brand = document.getElementById('eqBrand').value.trim();
+            const model = document.getElementById('eqModel').value.trim();
+            const serial = document.getElementById('eqSerial').value.trim();
+            const type = document.getElementById('eqType').value;
+            const status = document.getElementById('eqStatus').value;
+            const dto = {
+                laboratoryId: parseInt(laboratoryId),
+                code: code,
+                brand: brand,
+                model: model,
+                serialNumber: serial,
+                type: type,
+                status: status,
+                purchaseDate: purchaseRaw || null
+            };
+
+
+if (!laboratoryId || !code || !brand || !model || !serial || !type || !status) {
+    showAlert('warning', 'Debe completar todos los campos obligatorios.');
+    return;
+}
 
         const url = id === 0 ? '/Equipment/Create' : `/Equipment/Update?id=${id}`;
         const method = id === 0 ? 'POST' : 'PUT';
@@ -205,17 +245,45 @@
         }
     }
 
-    async function deleteEquipment(id) {
-        if (!confirm('¿Desea eliminar este equipo?')) return;
-        const res = await fetch(`/Equipment/Delete?id=${id}`, { method: 'DELETE' });
-        const data = await res.json();
-        if (res.ok) {
-            showAlert('success', data.message || 'Equipo eliminado.');
-            loadEquipment();
-        } else {
-            showAlert('danger', data.message || 'Error al eliminar.');
+            function deleteEquipment(id){
+
+            showDeleteConfirmation(
+                '¿Está seguro de que desea eliminar este equipo?',
+                async () => {
+
+                    const response =
+                        await fetch(`/Equipment/Delete?id=${id}`,{
+                            method:'DELETE'
+                        });
+
+                    const result = await response.json();
+
+                    if(result.success){
+
+                        loadEquipment();
+                        showAlert('success', result.message);
+                    }
+                    else{
+
+                        showAlert('danger', result.message);
+                    }
+                }
+            );
         }
-    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     async function showDetail(id) {
         document.getElementById('detailBody').innerHTML = 'Cargando...';
@@ -239,13 +307,28 @@
             </dl>`;
     }
 
-    function showAlert(type, msg) {
-        const c = document.getElementById('alertContainer');
-        c.innerHTML = `<div class="alert alert-${type} alert-dismissible fade show" role="alert">
-            ${msg}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>`;
-    }
+            function showAlert(type,message){
 
-    // Escuchar cambios en laboratorios desde otra página
+            const container =
+                document.getElementById('alertContainer');
+
+            container.innerHTML =
+            `
+            <div class="alert alert-${type} alert-dismissible fade show">
+                ${message}
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="alert">
+                </button>
+            </div>
+            `;
+
+            setTimeout(() => {
+                container.innerHTML = '';
+            }, 4000);
+        }
+
+    
     window.addEventListener('laboratoriesUpdated', async () => {
         const selectedId = parseInt(document.getElementById('eqLaboratoryId').value) || 0;
         if (selectedId || document.getElementById('eqModal').classList.contains('show')) {
@@ -255,4 +338,40 @@
 
     loadEquipment();
 </script>
+
+<style>
+
+.table{
+    background:white;
+}
+
+.card{
+    border:none;
+    border-radius:16px;
+    box-shadow:0 10px 25px rgba(0,0,0,.06);
+}
+
+.modal-content{
+    border-radius:16px;
+}
+
+.form-control,
+.form-select{
+    border-radius:10px;
+}
+
+.btn-dark{
+    background:#0f172a;
+    border-color:#0f172a;
+}
+
+.btn-dark:hover{
+    background:#1e293b;
+    border-color:#1e293b;
+}
+
+</style>
+
+
+
 }

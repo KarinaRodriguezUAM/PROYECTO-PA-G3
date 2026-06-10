@@ -1,0 +1,335 @@
+﻿@{
+    ViewData["Title"] = "Roles";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+
+    <div>
+        <h2 class="fw-bold mb-1">
+            Gestión de Roles
+        </h2>
+
+        <p class="text-muted mb-0">
+            Administración de permisos y perfiles del sistema
+        </p>
+    </div>
+
+    <button class="btn btn-dark px-4"
+            onclick="openCreateModal()">
+
+        <i class="bi bi-plus-circle me-2"></i>
+        Nuevo Rol
+
+    </button>
+
+</div>
+
+<div id="alertContainer"></div>
+
+<div class="table-responsive">
+    <table class="table table-bordered table-hover">
+        <thead class="table-dark">
+            <tr>
+                <th>#</th>
+                <th>Nombre</th>
+                <th>Descripción</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody id="rolesBody">
+            <tr>
+                <td colspan="5" class="text-center">Cargando...</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="roleModal" tabindex="-1">
+
+    <div class="modal-dialog modal-dialog-centered">
+
+        <div class="modal-content">
+
+            <div class="modal-header bg-dark text-white">
+
+                <h5 class="modal-title">
+                    <i class="bi bi-shield-lock me-2"></i>
+                    Gestión de Rol
+                </h5>
+
+                <button type="button"
+                        class="btn-close btn-close-white"
+                        data-bs-dismiss="modal">
+                </button>
+
+            </div>
+
+            <div class="modal-body p-4">
+
+                <input type="hidden"
+                       id="roleId"
+                       value="0" />
+
+                <div class="mb-3">
+
+                    <label class="form-label fw-semibold">
+                        Nombre del Rol
+                    </label>
+
+                    <input id="roleName"
+                           class="form-control"
+                           placeholder="Ej: Administrador" />
+
+                </div>
+
+                <div class="mb-3">
+
+                    <label class="form-label fw-semibold">
+                        Descripción
+                    </label>
+
+                    <textarea id="roleDescription"
+                              rows="4"
+                              class="form-control"
+                              placeholder="Descripción del rol">
+                    </textarea>
+
+                </div>
+
+            </div>
+
+            <div class="modal-footer">
+
+                <button class="btn btn-outline-secondary"
+                        data-bs-dismiss="modal">
+                    Cancelar
+                </button>
+
+                <button class="btn btn-dark"
+                        onclick="saveRole()">
+
+                    <i class="bi bi-check-circle me-1"></i>
+                    Guardar
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+@section Scripts {
+
+    <script>
+
+        const roleModal =
+            new bootstrap.Modal(document.getElementById('roleModal'));
+
+        async function loadRoles() {
+
+            const res = await fetch('/Roles/GetAll');
+            const data = res.ok ? await res.json() : [];
+
+            const tbody = document.getElementById('rolesBody');
+
+            if (!data.length) {
+
+                tbody.innerHTML =
+                `<tr>
+                    <td colspan="5" class="text-center">
+                        No hay roles registrados
+                    </td>
+                </tr>`;
+
+                return;
+            }
+
+            tbody.innerHTML = data.map(r => `
+                <tr>
+                    <td>${r.id}</td>
+                    <td>${r.name}</td>
+                    <td>${r.description ?? ''}</td>
+                    <td>
+                        <span class="badge ${r.isActive ? 'bg-success':'bg-secondary'}">
+                            ${r.isActive ? 'Activo':'Inactivo'}
+                        </span>
+                    </td>
+                    <td>
+                        <button class="btn btn-warning btn-sm"
+                            onclick="editRole(${r.id},'${r.name}','${r.description ?? ''}')">
+                            Editar
+                        </button>
+
+                        <button class="btn btn-danger btn-sm"
+                            onclick="deleteRole(${r.id})">
+                            Eliminar
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function openCreateModal(){
+
+            document.getElementById('roleId').value = 0;
+            document.getElementById('roleName').value = '';
+            document.getElementById('roleDescription').value = '';
+
+            roleModal.show();
+        }
+
+        function editRole(id,name,description){
+
+            document.getElementById('roleId').value = id;
+            document.getElementById('roleName').value = name;
+            document.getElementById('roleDescription').value = description;
+
+            roleModal.show();
+        }
+
+                async function saveRole(){
+
+            const id =
+                parseInt(document.getElementById('roleId').value);
+
+            const name =
+                document.getElementById('roleName').value.trim();
+
+            const description =
+                document.getElementById('roleDescription').value.trim();
+
+            if (!name || !description) {
+
+                showAlert(
+                    'warning',
+                    'Todos los campos son obligatorios.'
+                );
+
+                return;
+            }
+
+            const dto = {
+                name: name,
+                description: description
+            };
+
+            const url =
+                id === 0
+                ? '/Roles/Create'
+                : `/Roles/Update?id=${id}`;
+
+            const method =
+                id === 0
+                ? 'POST'
+                : 'PUT';
+
+            const response = await fetch(url,{
+                method: method,
+                headers:{'Content-Type':'application/json'},
+                body: JSON.stringify(dto)
+            });
+
+            const result = await response.json();
+
+            if(result.success){
+
+                roleModal.hide();
+                loadRoles();
+
+                showAlert('success',result.message);
+            }
+            else{
+
+                showAlert('danger',result.message);
+            }
+        }
+
+        function deleteRole(id){
+
+    showDeleteConfirmation(
+        '¿Está seguro de que desea eliminar este rol?',
+        async () => {
+
+            const response =
+                await fetch(`/Roles/Delete?id=${id}`,{
+                    method:'DELETE'
+                });
+
+            const result = await response.json();
+
+            if(result.success){
+
+                loadRoles();
+                showAlert('success', result.message);
+            }
+            else{
+
+                showAlert('danger', result.message);
+            }
+        }
+    );
+}
+        
+
+
+
+
+
+                function showAlert(type,message){
+
+            const container =
+                document.getElementById('alertContainer');
+
+            container.innerHTML =
+            `
+            <div class="alert alert-${type} alert-dismissible fade show">
+                ${message}
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="alert">
+                </button>
+            </div>
+            `;
+
+            setTimeout(() => {
+                container.innerHTML = '';
+            }, 4000);
+        }
+
+        loadRoles();
+
+    </script>
+
+    <style>
+
+        .table {
+            background: white;
+        }
+
+        .modal-content {
+            border-radius: 14px;
+        }
+
+        .form-control {
+            border-radius: 8px;
+        }
+
+        .btn-dark {
+            background: #0f172a;
+            border-color: #0f172a;
+        }
+
+            .btn-dark:hover {
+                background: #1e293b;
+                border-color: #1e293b;
+            }
+
+    </style>
+
+
+}

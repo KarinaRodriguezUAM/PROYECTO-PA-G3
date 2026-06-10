@@ -21,6 +21,13 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     /// <summary>
     /// Configuración del modelo de datos (tablas, llaves, índices y restricciones).
     /// </summary>
+    /// 
+    public DbSet<Role> Roles => Set<Role>();
+
+    public DbSet<User> Users => Set<User>();
+
+
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Laboratory>(entity =>
@@ -57,6 +64,72 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             entity.HasOne(x => x.Laboratory)
                   .WithMany(l => l.Equipments)
                   .HasForeignKey(x => x.LaboratoryId)
+                  .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<Role>(entity =>
+        {
+            entity.ToTable("Roles");
+
+            entity.HasKey(x => x.Id);
+
+            entity.Property(x => x.Name)
+                .HasMaxLength(50)
+                .IsRequired();
+
+            entity.HasIndex(x => x.Name)
+                .IsUnique();
+
+            entity.Property(x => x.Description)
+                .HasMaxLength(200);
+
+            entity.Property(x => x.IsActive)
+                .HasDefaultValue(true);
+
+            entity.Property(x => x.CreatedAtUtc)
+                .IsRequired();
+
+            entity.Property(x => x.UpdatedAtUtc)
+                .IsRequired();
+        });
+
+        modelBuilder.Entity<User>(entity =>
+        {
+            entity.ToTable("Users");
+
+            entity.HasKey(x => x.Id);
+
+            entity.Property(x => x.FirstName)
+                .HasMaxLength(100)
+                .IsRequired();
+
+            entity.Property(x => x.LastName)
+                .HasMaxLength(100)
+                .IsRequired();
+
+            entity.Property(x => x.Email)
+                .HasMaxLength(200)
+                .IsRequired();
+
+            entity.HasIndex(x => x.Email)
+                .IsUnique();
+
+            entity.Property(x => x.PasswordHash)
+                .HasMaxLength(500)
+                .IsRequired();
+
+            entity.Property(x => x.IsActive)
+                .HasDefaultValue(true);
+
+            entity.Property(x => x.CreatedAtUtc)
+                .IsRequired();
+
+            entity.Property(x => x.UpdatedAtUtc)
+                .IsRequired();
+
+            entity.HasOne(x => x.Role)
+                  .WithMany(r => r.Users)
+                  .HasForeignKey(x => x.RoleId)
                   .OnDelete(DeleteBehavior.Restrict);
         });
     }

@@ -2,15 +2,66 @@
     ViewData["Title"] = "Laboratorios";
 }
 
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h2>🔬 Laboratorios</h2>
-    <button class="btn btn-primary" onclick="openCreateModal()">+ Nuevo Laboratorio</button>
+<div class="d-flex justify-content-between align-items-center mb-4">
+
+    <div>
+        <h2 class="fw-bold mb-1">
+            Gestión de Laboratorios
+        </h2>
+
+        <p class="text-muted mb-0">
+            Administración de laboratorios y espacios académicos
+        </p>
+    </div>
+
+    <button class="btn btn-dark px-4"
+            onclick="openCreateModal()">
+
+        <i class="bi bi-building-add me-2"></i>
+        Nuevo Laboratorio
+
+    </button>
+
 </div>
 
 <div id="alertContainer"></div>
 
+<div class="row mb-4">
+
+    <div class="col-md-4">
+        <div class="card shadow border-0 text-center">
+            <div class="card-body">
+                <h1><i class="bi bi-building fs-1 text-primary"></i></h1>
+                <h3 id="totalLabs">0</h3>
+                <p class="text-muted">Laboratorios</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card shadow border-0 text-center">
+            <div class="card-body">
+                <h1><i class="bi bi-check-circle fs-1 text-success"></i></h1>
+                <h3 id="activeLabs">0</h3>
+                <p class="text-muted">Activos</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card shadow border-0 text-center">
+            <div class="card-body">
+                <h1><i class="bi bi-people fs-1 text-dark"></i></h1>
+                <h3 id="totalCapacity">0</h3>
+                <p class="text-muted">Capacidad Total</p>
+            </div>
+        </div>
+    </div>
+
+</div>
+
 <div class="table-responsive">
-    <table class="table table-bordered table-hover" id="laboratoriesTable">
+    <table class="table table-hover table-striped align-middle shadow-sm" id="laboratoriesTable">
         <thead class="table-dark">
             <tr>
                 <th>#</th>
@@ -32,9 +83,12 @@
 <div class="modal fade" id="labModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
-            <div class="modal-header">
+
+
+            <div class="modal-header bg-dark text-white">
                 <h5 class="modal-title" id="labModalTitle">Laboratorio</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <<button type="button"
+                             class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
                 <input type="hidden" id="labId" value="0" />
@@ -67,9 +121,11 @@
 <div class="modal fade" id="detailModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <div class="modal-header">
+
+                <div class="modal-header bg-dark text-white">
                 <h5 class="modal-title">Detalle del Laboratorio</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <button type="button"
+                            class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body" id="detailBody">Cargando...</div>
             <div class="modal-footer">
@@ -80,159 +136,244 @@
 </div>
 
 @section Scripts {
-<script>
-    const labModal = new bootstrap.Modal(document.getElementById('labModal'));
-    const detailModal = new bootstrap.Modal(document.getElementById('detailModal'));
+    <script>
+        const labModal = new bootstrap.Modal(document.getElementById('labModal'));
+        const detailModal = new bootstrap.Modal(document.getElementById('detailModal'));
 
-    async function loadLaboratories() {
-        const res = await fetch('/Laboratories/GetAll');
-        const data = res.ok ? await res.json() : [];
-        const tbody = document.getElementById('laboratoriesBody');
-        if (!data.length) {
-            tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">No hay laboratorios registrados.</td></tr>';
-            return;
+        async function loadLaboratories() {
+            const res = await fetch('/Laboratories/GetAll');
+            const data = res.ok ? await res.json() : [];
+                    document.getElementById('totalLabs').textContent =
+                data.length;
+
+            document.getElementById('activeLabs').textContent =
+                data.filter(x => x.isActive).length;
+
+            document.getElementById('totalCapacity').textContent =
+                data.reduce((sum, x) => sum + x.capacity, 0);
+            const tbody = document.getElementById('laboratoriesBody');
+            if (!data.length) {
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">No hay laboratorios registrados.</td></tr>';
+                return;
+            }
+            tbody.innerHTML = data.map(l => `
+                <tr>
+                    <td>${l.id}</td>
+                    <td>${l.name}</td>
+                    <td>${l.building}</td>
+                    <td>${l.floor}</td>
+                    <td>${l.capacity}</td>
+                    <td><span class="badge ${l.isActive ? 'bg-success' : 'bg-secondary'}">${l.isActive ? 'Activo' : 'Inactivo'}</span></td>
+                    <td>
+                                <button class="btn btn-sm btn-outline-dark" onclick="showDetail(${l.id})">Ver</button>
+                                <button class="btn btn-sm btn-outline-primary" onclick="openEditModal(${l.id},'${escHtml(l.name)}','${escHtml(l.building)}',${l.floor},${l.capacity})">Editar</button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteLaboratory(${l.id})">Eliminar</button>
+                    </td>
+                </tr>`).join('');
         }
-        tbody.innerHTML = data.map(l => `
-            <tr>
-                <td>${l.id}</td>
-                <td>${l.name}</td>
-                <td>${l.building}</td>
-                <td>${l.floor}</td>
-                <td>${l.capacity}</td>
-                <td><span class="badge ${l.isActive ? 'bg-success' : 'bg-secondary'}">${l.isActive ? 'Activo' : 'Inactivo'}</span></td>
-                <td>
-                    <button class="btn btn-sm btn-info" onclick="showDetail(${l.id})">Ver</button>
-                    <button class="btn btn-sm btn-warning" onclick="openEditModal(${l.id},'${escHtml(l.name)}','${escHtml(l.building)}',${l.floor},${l.capacity})">Editar</button>
-                    <button class="btn btn-sm btn-danger" onclick="deleteLaboratory(${l.id})">Eliminar</button>
-                </td>
-            </tr>`).join('');
-    }
 
-    function escHtml(s) { return (s||'').replace(/'/g,"\\'"); }
+        function escHtml(s) { return (s||'').replace(/'/g,"\\'"); }
 
-    function openCreateModal() {
-        document.getElementById('labModalTitle').textContent = 'Nuevo Laboratorio';
-        document.getElementById('labId').value = 0;
-        document.getElementById('labName').value = '';
-        document.getElementById('labBuilding').value = '';
-        document.getElementById('labFloor').value = '';
-        document.getElementById('labCapacity').value = '';
-        labModal.show();
-    }
+        function openCreateModal() {
+            document.getElementById('labModalTitle').textContent = 'Nuevo Laboratorio';
+            document.getElementById('labId').value = 0;
+            document.getElementById('labName').value = '';
+            document.getElementById('labBuilding').value = '';
+            document.getElementById('labFloor').value = '';
+            document.getElementById('labCapacity').value = '';
+            labModal.show();
+        }
 
-    function openEditModal(id, name, building, floor, capacity) {
-        document.getElementById('labModalTitle').textContent = 'Editar Laboratorio';
-        document.getElementById('labId').value = id;
-        document.getElementById('labName').value = name;
-        document.getElementById('labBuilding').value = building;
-        document.getElementById('labFloor').value = floor;
-        document.getElementById('labCapacity').value = capacity;
-        labModal.show();
-    }
+        function openEditModal(id, name, building, floor, capacity) {
+            document.getElementById('labModalTitle').textContent = 'Editar Laboratorio';
+            document.getElementById('labId').value = id;
+            document.getElementById('labName').value = name;
+            document.getElementById('labBuilding').value = building;
+            document.getElementById('labFloor').value = floor;
+            document.getElementById('labCapacity').value = capacity;
+            labModal.show();
+        }
 
     async function saveLaboratory() {
         const id = parseInt(document.getElementById('labId').value);
-        const dto = {
-            name: document.getElementById('labName').value,
-            building: document.getElementById('labBuilding').value,
-            floor: parseInt(document.getElementById('labFloor').value),
-            capacity: parseInt(document.getElementById('labCapacity').value)
-        };
+        const name = document.getElementById('labName').value.trim();
+        const building = document.getElementById('labBuilding').value.trim();
+        const floor = document.getElementById('labFloor').value;
+        const capacity = document.getElementById('labCapacity').value;
 
-        const url = id === 0 ? '/Laboratories/Create' : `/Laboratories/Update?id=${id}`;
-        const method = id === 0 ? 'POST' : 'PUT';
+    if (!name || !building || !floor || !capacity) {
+        showAlert('warning', 'Todos los campos son obligatorios.');
+        return;
+    }
 
-        try {
-            const res = await fetch(url, {
-                method, headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(dto)
-            });
+       const dto = {
+    name: name,
+    building: building,
+    floor: parseInt(floor),
+    capacity: parseInt(capacity)
+};
 
-            const data = await res.json();
-            console.log('Response status:', res.status);
-            console.log('Response data:', data);
+            const url = id === 0 ? '/Laboratories/Create' : `/Laboratories/Update?id=${id}`;
+            const method = id === 0 ? 'POST' : 'PUT';
 
-            if (data.success === true) {
-                labModal.hide();
-                showAlert('success', data.message || 'Operación realizada con éxito.');
-                loadLaboratories();
-                // Notificar a la página de Equipos que los laboratorios han cambiado
-                sessionStorage.setItem('laboratoriesUpdated', Date.now().toString());
-                window.dispatchEvent(new CustomEvent('laboratoriesUpdated'));
-            } else {
-                showAlert('danger', data.message || 'Error al guardar el laboratorio. Estado: ' + res.status + (data.details ? ' - ' + data.details : ''));
+            try {
+                const res = await fetch(url, {
+                    method, headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(dto)
+                });
+
+                const data = await res.json();
+                console.log('Response status:', res.status);
+                console.log('Response data:', data);
+
+                if (data.success === true) {
+                    labModal.hide();
+                    showAlert('success', data.message || 'Operación realizada con éxito.');
+                    loadLaboratories();
+                    // Notificar a la página de Equipos que los laboratorios han cambiado
+                    sessionStorage.setItem('laboratoriesUpdated', Date.now().toString());
+                    window.dispatchEvent(new CustomEvent('laboratoriesUpdated'));
+                } else {
+                    showAlert('danger', data.message || 'Error al guardar el laboratorio. Estado: ' + res.status + (data.details ? ' - ' + data.details : ''));
+                }
+            } catch (error) {
+                console.error('Error en saveLaboratory:', error);
+                showAlert('danger', 'Error al guardar: ' + error.message);
             }
-        } catch (error) {
-            console.error('Error en saveLaboratory:', error);
-            showAlert('danger', 'Error al guardar: ' + error.message);
         }
-    }
 
-    async function deleteLaboratory(id) {
-        if (!confirm('¿Desea eliminar este laboratorio?')) return;
-        try {
-            const res = await fetch(`/Laboratories/Delete?id=${id}`, { method: 'DELETE' });
-            const data = await res.json();
-            console.log('Delete Response:', data);
-            if (data.success === true) {
-                showAlert('success', data.message || 'Laboratorio eliminado.');
+                         
+        function deleteLaboratory(id){
+
+    showDeleteConfirmation(
+        '¿Está seguro de que desea eliminar este laboratorio?',
+        async () => {
+
+            const response =
+                await fetch(`/Laboratories/Delete?id=${id}`,{
+                    method:'DELETE'
+                });
+
+            const result = await response.json();
+
+            if(result.success){
+
                 loadLaboratories();
-                // Notificar a la página de Equipos que los laboratorios han cambiado
-                sessionStorage.setItem('laboratoriesUpdated', Date.now().toString());
-                window.dispatchEvent(new CustomEvent('laboratoriesUpdated'));
-            } else {
-                showAlert('danger', data.message || 'Error al eliminar.' + (data.details ? ' - ' + data.details : ''));
+                showAlert('success', result.message);
             }
-        } catch (error) {
-            console.error('Error en deleteLaboratory:', error);
-            showAlert('danger', 'Error al eliminar: ' + error.message);
+            else{
+
+                showAlert('danger', result.message);
+            }
         }
-    }
+    );
+}
 
-    async function showDetail(id) {
-        document.getElementById('detailBody').innerHTML = 'Cargando...';
-        detailModal.show();
 
-        const [labRes, eqRes] = await Promise.all([
-            fetch(`/Laboratories/GetById?id=${id}`),
-            fetch(`/Equipment/GetByLaboratory?laboratoryId=${id}`)
-        ]);
 
-        const labData = await labRes.json();
-        const eqData = eqRes.ok ? await eqRes.json() : [];
-        const lab = labData.result ?? labData;
 
-        const eqRows = Array.isArray(eqData) && eqData.length
-            ? eqData.map(e => `<tr>
-                <td>${e.code}</td><td>${e.brand}</td><td>${e.model}</td>
-                <td>${e.type}</td><td><span class="badge ${e.status==='Operational'?'bg-success':e.status==='UnderRepair'?'bg-warning':'bg-secondary'}">${e.status}</span></td>
-                <td><span class="badge ${e.isActive?'bg-success':'bg-secondary'}">${e.isActive?'Activo':'Inactivo'}</span></td>
-              </tr>`).join('')
-            : '<tr><td colspan="6" class="text-muted text-center">Sin equipos registrados.</td></tr>';
 
-        document.getElementById('detailBody').innerHTML = `
-            <dl class="row">
-                <dt class="col-sm-3">Nombre</dt><dd class="col-sm-9">${lab.name}</dd>
-                <dt class="col-sm-3">Edificio</dt><dd class="col-sm-9">${lab.building}</dd>
-                <dt class="col-sm-3">Piso</dt><dd class="col-sm-9">${lab.floor}</dd>
-                <dt class="col-sm-3">Capacidad</dt><dd class="col-sm-9">${lab.capacity}</dd>
-                <dt class="col-sm-3">Estado</dt><dd class="col-sm-9"><span class="badge ${lab.isActive?'bg-success':'bg-secondary'}">${lab.isActive?'Activo':'Inactivo'}</span></dd>
-            </dl>
-            <h6 class="mt-3">Equipos en este laboratorio</h6>
-            <table class="table table-sm table-bordered">
-                <thead class="table-secondary">
-                    <tr><th>Código</th><th>Marca</th><th>Modelo</th><th>Tipo</th><th>Estado</th><th>Activo</th></tr>
-                </thead>
-                <tbody>${eqRows}</tbody>
-            </table>`;
-    }
 
-    function showAlert(type, msg) {
-        const c = document.getElementById('alertContainer');
-        c.innerHTML = `<div class="alert alert-${type} alert-dismissible fade show" role="alert">
-            ${msg}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>`;
-    }
 
-    loadLaboratories();
-</script>
+
+
+
+
+
+        async function showDetail(id) {
+            document.getElementById('detailBody').innerHTML = 'Cargando...';
+            detailModal.show();
+
+            const [labRes, eqRes] = await Promise.all([
+                fetch(`/Laboratories/GetById?id=${id}`),
+                fetch(`/Equipment/GetByLaboratory?laboratoryId=${id}`)
+            ]);
+
+            const labData = await labRes.json();
+            const eqData = eqRes.ok ? await eqRes.json() : [];
+            const lab = labData.result ?? labData;
+
+            const eqRows = Array.isArray(eqData) && eqData.length
+                ? eqData.map(e => `<tr>
+                    <td>${e.code}</td><td>${e.brand}</td><td>${e.model}</td>
+                    <td>${e.type}</td><td><span class="badge ${e.status==='Operational'?'bg-success':e.status==='UnderRepair'?'bg-warning':'bg-secondary'}">${e.status}</span></td>
+                    <td><span class="badge ${e.isActive?'bg-success':'bg-secondary'}">${e.isActive?'Activo':'Inactivo'}</span></td>
+                  </tr>`).join('')
+                : '<tr><td colspan="6" class="text-muted text-center">Sin equipos registrados.</td></tr>';
+
+            document.getElementById('detailBody').innerHTML = `
+                <dl class="row">
+                    <dt class="col-sm-3">Nombre</dt><dd class="col-sm-9">${lab.name}</dd>
+                    <dt class="col-sm-3">Edificio</dt><dd class="col-sm-9">${lab.building}</dd>
+                    <dt class="col-sm-3">Piso</dt><dd class="col-sm-9">${lab.floor}</dd>
+                    <dt class="col-sm-3">Capacidad</dt><dd class="col-sm-9">${lab.capacity}</dd>
+                    <dt class="col-sm-3">Estado</dt><dd class="col-sm-9"><span class="badge ${lab.isActive?'bg-success':'bg-secondary'}">${lab.isActive?'Activo':'Inactivo'}</span></dd>
+                </dl>
+                <h6 class="mt-3">Equipos en este laboratorio</h6>
+                <table class="table table-sm table-bordered">
+                    <thead class="table-secondary">
+                        <tr><th>Código</th><th>Marca</th><th>Modelo</th><th>Tipo</th><th>Estado</th><th>Activo</th></tr>
+                    </thead>
+                    <tbody>${eqRows}</tbody>
+                </table>`;
+        }
+
+        function showAlert(type,message){
+
+    const container =
+        document.getElementById('alertContainer');
+
+    container.innerHTML =
+    `
+    <div class="alert alert-${type} alert-dismissible fade show">
+        ${message}
+        <button type="button"
+                class="btn-close"
+                data-bs-dismiss="alert">
+        </button>
+    </div>
+    `;
+
+    setTimeout(() => {
+        container.innerHTML = '';
+    }, 4000);
+}
+
+        loadLaboratories();
+    </script>
+
+        <style>
+
+            .table {
+                background: white;
+            }
+
+            .card {
+                border: none;
+                border-radius: 16px;
+                box-shadow: 0 10px 25px rgba(0,0,0,.06);
+            }
+
+            .modal-content {
+                border-radius: 16px;
+            }
+
+            .form-control {
+                border-radius: 10px;
+            }
+
+            .btn-dark {
+                background: #0f172a;
+                border-color: #0f172a;
+            }
+
+                .btn-dark:hover {
+                    background: #1e293b;
+                    border-color: #1e293b;
+                }
+
+        </style>
+
+
+
 }

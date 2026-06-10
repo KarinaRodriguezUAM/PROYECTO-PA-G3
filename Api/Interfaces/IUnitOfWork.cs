@@ -15,6 +15,10 @@ public interface IUnitOfWork
     /// </summary>
     IEquipmentRepository Equipment { get; }
 
+    IRoleRepository Roles { get; }
+
+    IUserRepository Users { get; }
+
     /// <summary>
     /// Guarda en base de datos todos los cambios pendientes.
     /// </summary>
