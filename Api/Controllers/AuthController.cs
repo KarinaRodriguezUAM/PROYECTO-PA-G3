@@ -1,29 +1,29 @@
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
 using Uam.LabHelpDesk.Api.DTOs;
+using Uam.LabHelpDesk.Api.DTOs.Auth;
+using Uam.LabHelpDesk.Api.Interfaces;
 
 namespace Uam.LabHelpDesk.Api.Controllers;
 
-/// <summary>
-/// Controlador para autenticación y emisión de tokens JWT.
-/// </summary>
 [ApiController]
 [Route("api/[controller]")]
-public class AuthController(IConfiguration configuration) : ControllerBase
+public class AuthController : ControllerBase
 {
-    /// <summary>
-    /// Genera un JWT válido para acceso a endpoints protegidos.
-    /// </summary>
+    private readonly IAuthRepository _authRepository;
+
+    public AuthController(IAuthRepository authRepository)
+    {
+        _authRepository = authRepository;
+    }
+
     [AllowAnonymous]
     [HttpPost(nameof(Login))]
-    [ProducesResponseType(typeof(ApiOperationResultDto<LoginResponseDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiOperationResultDto<AuthResponseDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiOperationResultDto<AuthResponseDto>), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(ApiOperationResultDto<object>), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ApiOperationResultDto<object>), StatusCodes.Status401Unauthorized)]
-    public IActionResult Login([FromBody] LoginRequestDto request)
+    public async Task<IActionResult> Login(
+        [FromBody] Uam.LabHelpDesk.Api.DTOs.Auth.LoginRequestDto request)
     {
         if (!ModelState.IsValid)
         {
@@ -35,57 +35,69 @@ public class AuthController(IConfiguration configuration) : ControllerBase
             });
         }
 
-        var defaultUser = configuration["Jwt:DefaultUser"];
-        var defaultPassword = configuration["Jwt:DefaultPassword"];
-        var issuer = configuration["Jwt:Issuer"]!;
-        var audience = configuration["Jwt:Audience"]!;
-        var secretKey = configuration["Jwt:SecretKey"]!;
-        var expirationMinutes = configuration.GetValue<int>("Jwt:TokenExpirationMinutes");
+        var result = await _authRepository.LoginAsync(request);
 
-        if (!string.Equals(request.Username, defaultUser, StringComparison.Ordinal) ||
-            !string.Equals(request.Password, defaultPassword, StringComparison.Ordinal))
+        if (!result.Success)
         {
-            return Unauthorized(new ApiOperationResultDto<object>
+            return Unauthorized(result);
+        }
+
+        result.Code = StatusCodes.Status200OK.ToString();
+
+        return Ok(result);
+    }
+
+    [AllowAnonymous]
+    [HttpPost(nameof(RefreshToken))]
+    [ProducesResponseType(typeof(ApiOperationResultDto<AuthResponseDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiOperationResultDto<AuthResponseDto>), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ApiOperationResultDto<object>), StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> RefreshToken(
+        [FromBody] Uam.LabHelpDesk.Api.DTOs.Auth.RefreshTokenRequestDto request)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(new ApiOperationResultDto<object>
             {
                 Success = false,
-                Code = StatusCodes.Status401Unauthorized.ToString(),
-                Message = "Credenciales inválidas."
+                Code = StatusCodes.Status400BadRequest.ToString(),
+                Message = "Los datos proporcionados no son válidos."
             });
         }
 
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
-        var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-        var expires = DateTime.UtcNow.AddMinutes(expirationMinutes);
-        var defaultRole = configuration["Jwt:DefaultRole"] ?? "Admin";
+        var result = await _authRepository.RefreshTokenAsync(request);
 
-        var claims = new List<Claim>
+        if (!result.Success)
         {
-            new(JwtRegisteredClaimNames.Sub, request.Username),
-            new(JwtRegisteredClaimNames.UniqueName, request.Username),
-            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            new(ClaimTypes.Role, defaultRole)
-        };
+            return Unauthorized(result);
+        }
 
-        var token = new JwtSecurityToken(
-            issuer: issuer,
-            audience: audience,
-            claims: claims,
-            notBefore: DateTime.UtcNow,
-            expires: expires,
-            signingCredentials: credentials);
+        result.Code = StatusCodes.Status200OK.ToString();
 
-        var jwt = new JwtSecurityTokenHandler().WriteToken(token);
+        return Ok(result);
+    }
 
-        return Ok(new ApiOperationResultDto<LoginResponseDto>
+    [Authorize]
+    [HttpPost(nameof(Logout))]
+    [ProducesResponseType(typeof(ApiOperationResultDto<bool>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiOperationResultDto<object>), StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> Logout(
+        [FromBody] Uam.LabHelpDesk.Api.DTOs.Auth.RefreshTokenRequestDto request)
+    {
+        if (!ModelState.IsValid)
         {
-            Success = true,
-            Code = StatusCodes.Status200OK.ToString(),
-            Message = "Token generado correctamente.",
-            Result = new LoginResponseDto
+            return BadRequest(new ApiOperationResultDto<object>
             {
-                AccessToken = jwt,
-                ExpiresIn = expirationMinutes * 60
-            }
-        });
+                Success = false,
+                Code = StatusCodes.Status400BadRequest.ToString(),
+                Message = "Los datos proporcionados no son válidos."
+            });
+        }
+
+        var result = await _authRepository.LogoutAsync(request);
+
+        result.Code = StatusCodes.Status200OK.ToString();
+
+        return Ok(result);
     }
 }

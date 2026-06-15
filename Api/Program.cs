@@ -5,11 +5,14 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Globalization;
 using System.Text;
+using Uam.LabHelpDesk.Api.Interfaces;
+using Uam.LabHelpDesk.Api.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddScoped<IAuthRepository, AuthRepository>();
 builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new OpenApiInfo
@@ -49,7 +52,9 @@ var resourcesPath = builder.Configuration["Localization:ResourcesPath"] ?? "Reso
 builder.Services.AddLocalization(options => options.ResourcesPath = resourcesPath);
 
 builder.Services.AddDbContext<Uam.LabHelpDesk.Api.Data.AppDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("DefaultConnection"),
+        x => x.MigrationsAssembly("Uam.LabHelpDesk.Api")));
 
 builder.Services.AddScoped<Uam.LabHelpDesk.Api.Interfaces.IUnitOfWork, Uam.LabHelpDesk.Api.Repositories.UnitOfWork>();
 

@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 
 namespace Uam.LabHelpDesk.Api.Data;
@@ -15,7 +15,7 @@ public class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbContext>
     {
         var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
         optionsBuilder.UseSqlServer(
-    "Server=localhost;Database=UamLabHelpDeskDb;User Id=sa;Password=Batman2025;TrustServerCertificate=True");
+            "Server=localhost;Database=UamLabHelpDeskDb;User Id=sa;Password=Admin1234!;TrustServerCertificate=True");
         return new AppDbContext(optionsBuilder.Options);
     }
 }

@@ -150,6 +150,19 @@ Resultado
 
 El módulo Users and Roles quedó completamente integrado con la API REST y la base de datos SQL Server, permitiendo administrar usuarios y roles de forma segura, siguiendo las reglas de negocio, seguridad y arquitectura definidas en el requerimiento.
 
+## Requerimiento 3 - Pruebas de Autenticación y JWT
+
+Para probar el flujo completo de autenticación y Refresh Token, siga estos pasos:
+
+1. **Iniciar los proyectos:** Asegúrese de ejecutar tanto la API como el MvcClient simultáneamente.
+2. **Login Exitoso:** Navegue a la pantalla de Login en el cliente MVC e ingrese credenciales válidas de un usuario de prueba en la base de datos. Será redirigido al Home y verá su correo en la barra de navegación superior.
+3. **Login Fallido:** Intente ingresar credenciales inválidas; el sistema mostrará un mensaje de error genérico centralizado desde los archivos `.resx` de la API, sin especificar si falló el correo o la contraseña.
+4. **Verificar Cookies:** En el navegador, abra las herramientas de desarrollador (F12) -> *Application* (o Almacenamiento) -> *Cookies*. Verificará que existe la cookie de sesión cifrada de ASP.NET (HttpOnly).
+5. **Renovación automática (Refresh Token):** - El *Access Token* está configurado para expirar rápido. 
+   - Cuando expire y el cliente intente hacer una petición, el interceptor `AuthenticationDelegatingHandler` detectará el error 401.
+   - Transparentemente, el cliente enviará el *Refresh Token* al endpoint `/api/Auth/RefreshToken`, obtendrá un nuevo par de tokens, actualizará la cookie y reintentará la petición original sin que el usuario note ninguna interrupción.
+6. **Logout:** Haga clic en "Cerrar Sesión" en la barra superior. Esto llamará al endpoint de Logout revocando el *Refresh Token* en la base de datos y limpiará la cookie local, redirigiéndolo a la pantalla de Login.
+
 
 
 
