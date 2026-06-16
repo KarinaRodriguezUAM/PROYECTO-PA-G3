@@ -6,7 +6,7 @@ Programación avanzada, proyecto grupal
 
 ### Como ejecutar el proyecto
 
-El proyecto de Backend se conecta a una base de datos local y el API levanta en el puerto 44385. El frontend (MvcClient) se levanta en el puerto 44300
+El proyecto de Backend se conecta a una base de datos local y el API levanta en el puerto 44333. El frontend (MvcClient) se levanta en el puerto 44300
 
 
 
@@ -158,7 +158,7 @@ Programación avanzada, proyecto grupal
 
 ### Como ejecutar el proyecto
 
-El proyecto de Backend se conecta a una base de datos local y el API levanta en el puerto 44385. El frontend (MvcClient) se levanta en el puerto 44300
+El proyecto de Backend se conecta a una base de datos local y el API levanta en el puerto 44333. El frontend (MvcClient) se levanta en el puerto 44300
 
 
 
@@ -302,217 +302,79 @@ Resultado
 
 El módulo Users and Roles quedó completamente integrado con la API REST y la base de datos SQL Server, permitiendo administrar usuarios y roles de forma segura, siguiendo las reglas de negocio, seguridad y arquitectura definidas en el requerimiento.
 
-## Requerimiento 3 – Autenticación, Autorización y Gestión de Tokens JWT
+## Requerimiento 3 – Authentication y JWT
+
+Se implementó un sistema de autenticación completo para el UAM Lab Help Desk usando los usuarios y roles del Requerimiento 2.
+
+---
 
 ### Objetivo
 
-Implementar un mecanismo seguro de autenticación y autorización para el sistema UAM Lab Help Desk mediante JSON Web Tokens (JWT), incorporando además la gestión de Refresh Tokens para renovación de sesiones y revocación segura durante el cierre de sesión.
+Reemplazar la autenticación básica por un sistema con JWT de corta duración y Refresh Token para renovación de sesión.
 
 ---
 
-### Funcionalidades Implementadas
+### Flujo de autenticación
 
-#### Autenticación de Usuarios
+* Login con Email y Password
+* Validación contra la tabla `Users`
+* Generación de:
 
-Se implementó un proceso de autenticación basado en credenciales almacenadas en la base de datos.
-
-Características principales:
-
-* Validación de usuarios registrados en la tabla `Users`.
-* Verificación segura de contraseñas mediante BCrypt.
-* Validación del estado activo del usuario.
-* Generación de Access Token JWT.
-* Generación de Refresh Token persistido en base de datos.
-* Mensajes de autenticación centralizados mediante archivos de recursos (`.resx`).
+  * Access Token (JWT, 60 min)
+  * Refresh Token (7 días)
+* Uso de JWT para endpoints protegidos
+* Renovación de sesión con Refresh Token
+* Logout con revocación del Refresh Token
 
 ---
 
-#### Autorización Basada en JWT
+### Implementación
 
-El sistema protege los recursos mediante tokens JWT firmados digitalmente.
-
-Los tokens contienen información relevante del usuario autenticado:
-
-* Identificador del usuario.
-* Correo electrónico.
-* Rol asignado.
-
-Los endpoints protegidos utilizan el atributo:
-
-```csharp
-[Authorize]
-```
-
-garantizando que únicamente usuarios autenticados puedan acceder a los recursos restringidos.
+* Endpoint `/Login` (AllowAnonymous)
+* Endpoint `/RefreshToken`
+* Endpoint `/Logout`
+* Tokens configurados desde `appsettings.json`
+* Claims del JWT: `UserId`, `Email`, `Role`
 
 ---
 
-#### Refresh Token
+### Refresh Token
 
-Se implementó un mecanismo de renovación de sesión mediante Refresh Tokens.
-
-Características:
-
-* Generación automática durante el Login.
-* Almacenamiento en base de datos.
-* Fecha de expiración configurable.
-* Validación de vigencia.
-* Rotación automática de tokens.
-* Revocación durante el cierre de sesión.
-
-Esto permite mantener sesiones seguras sin obligar al usuario a autenticarse constantemente.
+* Guardado en tabla `RefreshTokens`
+* Expira y puede ser revocado
+* Se invalida automáticamente al hacer refresh o logout
+* No se puede reutilizar
 
 ---
 
-#### Logout Seguro
+### Seguridad
 
-Se desarrolló un proceso de cierre de sesión que:
-
-* Revoca el Refresh Token almacenado.
-* Impide reutilización de tokens previamente emitidos.
-* Elimina la sesión activa del cliente MVC.
-* Redirige al usuario a la pantalla de autenticación.
-
----
-
-### Arquitectura Implementada
-
-Se mantuvo la arquitectura definida para el proyecto:
-
-Model → DTO → Interface → Repository → UnitOfWork → Controller
-
-Adicionalmente se incorporaron los siguientes componentes:
-
-* AuthRepository
-* IAuthRepository
-* RefreshTokenRepository
-* AuthenticationDelegatingHandler
-* AuthService
-* DTOs específicos para autenticación
-
-La lógica de autenticación permanece desacoplada de los controladores siguiendo principios de responsabilidad única.
+* Contraseñas con BCrypt
+* Usuario inactivo no puede autenticarse
+* Mensajes sin información sensible (genéricos)
+* JWT firmado con HMAC SHA-256
+* Validación de expiración, firma y audiencia
 
 ---
 
-### Seguridad Implementada
+### MVC
 
-#### Contraseñas
-
-Las contraseñas nunca se almacenan en texto plano.
-
-Se utiliza:
-
-```text
-BCrypt Password Hashing
-```
-
-para almacenar y validar credenciales de forma segura.
+* Login con almacenamiento de tokens en cookies HttpOnly
+* Logout desde layout principal
+* Renovación automática si el token expira (401 → refresh)
+* Redirección a Login si falla la renovación
 
 ---
 
-#### Tokens
+### Reglas cumplidas
 
-Los JWT son emitidos utilizando:
-
-```text
-HMAC SHA-256
-```
-
-y contienen información mínima necesaria para la autorización.
-
-Se valida:
-
-* Firma digital.
-* Emisor.
-* Audiencia.
-* Tiempo de expiración.
-
----
-
-#### Refresh Tokens
-
-Cada Refresh Token:
-
-* Es único.
-* Se almacena en base de datos.
-* Posee fecha de expiración.
-* Puede ser revocado.
-* No puede reutilizarse una vez invalidado.
-
----
-
-### Base de Datos
-
-Se incorporó la entidad:
-
-```text
-RefreshToken
-```
-
-para la gestión de sesiones persistentes.
-
-Información almacenada:
-
-* Id
-* UserId
-* Token
-* ExpiresAtUtc
-* IsRevoked
-
-Esta estructura permite controlar la vigencia y revocación de sesiones de manera centralizada.
-
----
-
-### Integración MVC
-
-El cliente MVC se integró completamente con la API.
-
-Características:
-
-* Pantalla de Login.
-* Persistencia de sesión mediante Cookies Authentication.
-* Almacenamiento seguro de Access Token y Refresh Token.
-* Protección de vistas mediante autorización.
-* Cierre de sesión integrado con la API.
-
----
-
-### Casos de Prueba Realizados
-
-#### Login Exitoso
-
-* Usuario válido.
-* Contraseña correcta.
-* Generación de Access Token.
-* Generación de Refresh Token.
-* Acceso autorizado al sistema.
-
-#### Login Fallido
-
-* Credenciales inválidas.
-* Mensaje genérico de error.
-* Sin filtración de información sensible.
-
-#### Renovación de Token
-
-* Refresh Token válido.
-* Emisión de nuevo Access Token.
-* Emisión de nuevo Refresh Token.
-
-#### Logout
-
-* Revocación del Refresh Token.
-* Cierre de sesión exitoso.
-
-#### Reutilización de Token Revocado
-
-* Intento de uso posterior al Logout.
-* Acceso denegado correctamente.
+* Sin strings hardcodeados (todo en `.resx`)
+* Eliminación lógica (`IsActive = false`)
+* Sin lógica de negocio en controladores
+* Cliente MVC consume solo API
 
 ---
 
 ### Resultado
 
-El sistema de autenticación quedó completamente integrado con la arquitectura del proyecto, proporcionando un mecanismo seguro de identificación, autorización y administración de sesiones mediante JWT y Refresh Tokens.
-
-La implementación cumple con los requisitos de seguridad, escalabilidad y separación de responsabilidades definidos para el proyecto UAM Lab Help Desk.
+Sistema de autenticación seguro con JWT y Refresh Tokens, cumpliendo el flujo completo de login, renovación de sesión y logout según los requisitos del proyecto.

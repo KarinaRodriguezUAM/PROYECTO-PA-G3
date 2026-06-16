@@ -77,7 +77,7 @@ public class AuthController : ControllerBase
         return Ok(result);
     }
 
-    [Authorize]
+    [AllowAnonymous]
     [HttpPost(nameof(Logout))]
     [ProducesResponseType(typeof(ApiOperationResultDto<bool>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiOperationResultDto<object>), StatusCodes.Status400BadRequest)]
