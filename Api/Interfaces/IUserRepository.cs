@@ -33,4 +33,6 @@ public interface IUserRepository : IRepository<User>
     Task<ApiOperationResultDto<object>> DeleteUserAsync(
         int id,
         CancellationToken cancellationToken = default);
+
+    Task<User?> GetByEmailAsync(string email, CancellationToken cancellationToken = default);
 }

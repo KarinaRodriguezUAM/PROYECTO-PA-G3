@@ -3,7 +3,6 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Uam.LabHelpDesk.Api.Data;
 
@@ -12,11 +11,9 @@ using Uam.LabHelpDesk.Api.Data;
 namespace Uam.LabHelpDesk.Api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260608021222_AddUsersAndRoles")]
-    partial class AddUsersAndRoles
+    partial class AppDbContextModelSnapshot : ModelSnapshot
     {
-        /// <inheritdoc />
-        protected override void BuildTargetModel(ModelBuilder modelBuilder)
+        protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -136,6 +133,41 @@ namespace Uam.LabHelpDesk.Api.Migrations
                     b.ToTable("Laboratories", (string)null);
                 });
 
+            modelBuilder.Entity("Uam.LabHelpDesk.Api.Models.RefreshToken", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("ExpiresAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsRevoked")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Token")
+                        .IsUnique();
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("RefreshToken");
+                });
+
             modelBuilder.Entity("Uam.LabHelpDesk.Api.Models.Role", b =>
                 {
                     b.Property<int>("Id")
@@ -233,6 +265,17 @@ namespace Uam.LabHelpDesk.Api.Migrations
                         .IsRequired();
 
                     b.Navigation("Laboratory");
+                });
+
+            modelBuilder.Entity("Uam.LabHelpDesk.Api.Models.RefreshToken", b =>
+                {
+                    b.HasOne("Uam.LabHelpDesk.Api.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Uam.LabHelpDesk.Api.Models.User", b =>

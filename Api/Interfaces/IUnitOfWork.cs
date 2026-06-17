@@ -19,6 +19,8 @@ public interface IUnitOfWork
 
     IUserRepository Users { get; }
 
+    IRefreshTokenRepository RefreshTokens { get; }
+
     /// <summary>
     /// Guarda en base de datos todos los cambios pendientes.
     /// </summary>

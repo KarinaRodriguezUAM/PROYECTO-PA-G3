@@ -26,6 +26,11 @@ public class UserRepository(
             cancellationToken);
     }
 
+    public async Task<User?> GetByEmailAsync(string email, CancellationToken cancellationToken = default)
+    {
+        return await context.Users.FirstOrDefaultAsync(u => u.Email == email, cancellationToken);
+    }
+
     public async Task<ApiOperationResultDto<List<UserDto>>> GetAllUsersAsync(
     CancellationToken cancellationToken = default)
     {
