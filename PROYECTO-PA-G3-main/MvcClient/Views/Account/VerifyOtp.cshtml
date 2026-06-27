@@ -1,0 +1,49 @@
+@model Uam.LabHelpDesk.MvcClient.Models.Auth.VerifyOtpViewModel
+
+@{
+    ViewData["Title"] = "Verificar Código OTP";
+}
+
+<div class="row justify-content-center mt-5">
+    <div class="col-md-4">
+        <div class="card shadow">
+            <div class="card-body">
+                <h3 class="card-title text-center mb-4">Verificación de OTP</h3>
+                
+                @if (TempData["ErrorMessage"] != null)
+                {
+                    <div class="alert alert-danger text-center mb-3">
+                        @TempData["ErrorMessage"]
+                    </div>
+                }
+
+                <form asp-controller="Account" asp-action="VerifyOtp" method="post">
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                    <div class="form-group mb-4">
+                        <label asp-for="Code" class="form-label">Código de Verificación</label>
+                        <input asp-for="Code" class="form-control text-center fs-4 fw-bold" placeholder="000000" maxlength="6" autofocus />
+                        <span asp-validation-for="Code" class="text-danger"></span>
+                        <div class="form-text text-muted text-center mt-2">
+                            Ingrese el código de 6 dígitos que fue enviado a su dirección de correo electrónico.
+                        </div>
+                    </div>
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary btn-block">Verificar</button>
+                    </div>
+                </form>
+                
+                <div class="text-center mt-3">
+                    <a asp-action="Login" class="text-decoration-none">Volver al Inicio de Sesión</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        @* @await Html.RenderPartialAsync("_ValidationScriptsPartial"); *@
+    }
+}
