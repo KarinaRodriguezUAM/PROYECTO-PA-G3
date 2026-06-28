@@ -13,9 +13,14 @@ public class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbContext>
     /// </summary>
     public AppDbContext CreateDbContext(string[] args)
     {
+        var configuration = new ConfigurationBuilder()
+            .SetBasePath(Directory.GetCurrentDirectory())
+            .AddJsonFile("appsettings.json")
+            .Build();
+
         var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
-        optionsBuilder.UseSqlServer(
-            "Server=(localdb)\\MSSQLLocalDB;Database=UamLabHelpDeskDb;Trusted_Connection=True;TrustServerCertificate=True");
+        optionsBuilder.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));
+
         return new AppDbContext(optionsBuilder.Options);
     }
 }
