@@ -1,4 +1,0 @@
-<Solution>
-  <Project Path="Api/Uam.LabHelpDesk.Api.csproj" />
-  <Project Path="MvcClient/Uam.LabHelpDesk.MvcClient.csproj" />
-</Solution>
