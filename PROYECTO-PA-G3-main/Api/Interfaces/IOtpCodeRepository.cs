@@ -13,6 +13,8 @@ namespace Uam.LabHelpDesk.Api.Interfaces
         /// <summary>
         /// Obtiene un código OTP por su SessionToken.
         /// </summary>
+        
+        
         Task<OtpCode?> GetBySessionTokenAsync(string sessionToken, CancellationToken cancellationToken = default);
 
         /// <summary>

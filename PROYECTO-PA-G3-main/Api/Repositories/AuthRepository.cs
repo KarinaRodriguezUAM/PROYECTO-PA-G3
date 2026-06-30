@@ -1,8 +1,11 @@
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text;
 using Uam.LabHelpDesk.Api.DTOs;
 using Uam.LabHelpDesk.Api.DTOs.Auth;
 using Uam.LabHelpDesk.Api.Interfaces;
@@ -171,6 +174,8 @@ namespace Uam.LabHelpDesk.Api.Repositories
             }
 
             existingToken.IsRevoked = true;
+            existingToken.RevokedAtUtc = DateTime.UtcNow;
+            existingToken.RevokedReason = "Token refreshed";
             _unitOfWork.RefreshTokens.Update(existingToken);
 
             var user = await _unitOfWork.Users.GetByIdAsync(existingToken.UserId);
@@ -256,5 +261,343 @@ namespace Uam.LabHelpDesk.Api.Repositories
                 )
             };
         }
+        public async Task<ApiOperationResultDto<string>> ForgotPasswordAsync(ForgotPasswordRequestDto request)
+        {
+            var user = await _unitOfWork.Users.GetByEmailAsync(request.Email);
+
+            // 🔐 Respuesta SIEMPRE genérica (seguridad contra enumeración)
+            var genericResponse = new ApiOperationResultDto<string>
+            {
+                Success = true,
+                Result = null,
+                Message = _localizer["ForgotPasswordEmailSent"]
+                          ?? "Si el correo está registrado, recibirás instrucciones de recuperación."
+            };
+
+            // Si usuario no existe o está inactivo
+            if (user == null || !user.IsActive)
+            {
+                return genericResponse;
+            }
+
+            // 1. Invalidar solicitudes anteriores activas
+            var oldRequest = await _unitOfWork.PasswordResets.GetActiveByUserIdAsync(user.Id);
+
+            if (oldRequest != null)
+            {
+                oldRequest.IsUsed = true;
+                _unitOfWork.PasswordResets.Update(oldRequest);
+            }
+
+            // 2. Generar OTP
+            string code = RandomNumberGenerator.GetInt32(100000, 1000000).ToString();
+
+            // 3. SessionToken (IMPORTANTE: se necesita en MVC)
+            string sessionToken = Guid.NewGuid().ToString();
+
+            // 4. Expiración
+            int expirationMinutes = int.Parse(
+                _configuration["PasswordReset:CodeExpirationMinutes"] ?? "10"
+            );
+
+            // 5. Crear entidad
+            var resetRequest = new PasswordResetRequest
+            {
+                UserId = user.Id,
+                SessionToken = sessionToken,
+                Code = code,
+                ExpiresAtUtc = DateTime.UtcNow.AddMinutes(expirationMinutes),
+                IsUsed = false,
+                CreatedAtUtc = DateTime.UtcNow
+            };
+
+            await _unitOfWork.PasswordResets.AddAsync(resetRequest);
+            await _unitOfWork.SaveChangesAsync();
+
+            // 6. Enviar correo
+            string subject = "Recuperación de contraseña - UAM Lab Help Desk";
+
+            string body = $@"
+        <p>Tu código de recuperación es:</p>
+        <h2>{code}</h2>
+        <p>Este código expira en {expirationMinutes} minutos.</p>
+    ";
+
+            bool emailSent =
+                await _smtpService.SendEmailAsync(user.Email, subject, body);
+
+            if (!emailSent)
+            {
+                resetRequest.IsUsed = true;
+                _unitOfWork.PasswordResets.Update(resetRequest);
+                await _unitOfWork.SaveChangesAsync();
+
+                return new ApiOperationResultDto<string>
+                {
+                    Success = false,
+                    Result = null,
+                    Message = _localizer["EmailSendFailed"]
+                              ?? "No se pudo enviar el correo de recuperación."
+                };
+            }
+
+            return new ApiOperationResultDto<string>
+            {
+                Success = true,
+                Result = sessionToken,
+                Message = _localizer["ForgotPasswordEmailSent"]
+            };
+        }
+        public async Task<ApiOperationResultDto<string>> ResetPasswordAsync(ResetPasswordRequestDto request)
+        {
+            var resetRequest = await _unitOfWork.PasswordResets
+                .GetBySessionTokenAsync(request.SessionToken);
+
+            if (resetRequest == null)
+            {
+                return new ApiOperationResultDto<string>
+                {
+                    Success = false,
+                    Message = _localizer["InvalidSessionToken"]
+                };
+            }
+
+            if (resetRequest.IsUsed)
+            {
+                return new ApiOperationResultDto<string>
+                {
+                    Success = false,
+                    Message = _localizer["UsedResetCode"]
+                };
+            }
+
+            if (resetRequest.ExpiresAtUtc <= DateTime.UtcNow)
+            {
+                return new ApiOperationResultDto<string>
+                {
+                    Success = false,
+                    Message = _localizer["ExpiredResetCode"]
+                };
+            }
+
+            if (resetRequest.Code?.Trim() != request.Code?.Trim())
+            {
+                return new ApiOperationResultDto<string>
+                {
+                    Success = false,
+                    Message = _localizer["InvalidResetCode"]
+                };
+            }
+
+            var user = await _unitOfWork.Users.GetByIdAsync(resetRequest.UserId);
+
+            if (user == null || !user.IsActive)
+            {
+                return new ApiOperationResultDto<string>
+                {
+                    Success = false,
+                    Message = _localizer["InvalidUser"]
+                };
+            }
+
+            if (BCrypt.Net.BCrypt.Verify(request.NewPassword, user.PasswordHash))
+            {
+                return new ApiOperationResultDto<string>
+                {
+                    Success = false,
+                    Message = _localizer["NewPasswordMustBeDifferent"]
+                };
+            }
+
+            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
+            user.UpdatedAtUtc = DateTime.UtcNow;
+            _unitOfWork.Users.Update(user);
+
+            resetRequest.IsUsed = true;
+            resetRequest.UsedAtUtc = DateTime.UtcNow;
+            _unitOfWork.PasswordResets.Update(resetRequest);
+
+            var sessions = await _unitOfWork.RefreshTokens.GetActiveByUserIdAsync(user.Id);
+
+            foreach (var session in sessions)
+            {
+                session.IsRevoked = true;
+                session.RevokedAtUtc = DateTime.UtcNow;
+                session.RevokedReason = "Password reset";
+                _unitOfWork.RefreshTokens.Update(session);
+            }
+
+            await _unitOfWork.SaveChangesAsync();
+
+            return new ApiOperationResultDto<string>
+            {
+                Success = true,
+                Result = "OK",
+                Message = _localizer["PasswordResetSuccess"]
+            };
+        }
+
+        public async Task<ApiOperationResultDto<bool>> ChangePasswordAsync(
+    ChangePasswordRequestDto request,
+    int userId,
+    string? currentRefreshToken = null)
+        {
+            var user = await _unitOfWork.Users.GetByIdAsync(userId);
+
+            if (user == null || !user.IsActive)
+            {
+                return new ApiOperationResultDto<bool>
+                {
+                    Success = false,
+                    Message = _localizer["InvalidUser"]
+                };
+            }
+
+            if (!BCrypt.Net.BCrypt.Verify(request.CurrentPassword, user.PasswordHash))
+            {
+                return new ApiOperationResultDto<bool>
+                {
+                    Success = false,
+                    Message = _localizer["InvalidCurrentPassword"]
+                };
+            }
+
+            if (BCrypt.Net.BCrypt.Verify(request.NewPassword, user.PasswordHash))
+            {
+                return new ApiOperationResultDto<bool>
+                {
+                    Success = false,
+                    Message = _localizer["NewPasswordMustBeDifferent"]
+                };
+            }
+
+            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
+            user.UpdatedAtUtc = DateTime.UtcNow;
+
+            _unitOfWork.Users.Update(user);
+
+            var sessions = await _unitOfWork.RefreshTokens.GetActiveByUserIdAsync(userId);
+
+            foreach (var session in sessions)
+            {
+                if (!string.IsNullOrEmpty(currentRefreshToken) &&
+                    session.Token == currentRefreshToken)
+                    continue;
+
+                session.IsRevoked = true;
+                session.RevokedAtUtc = DateTime.UtcNow;
+                session.RevokedReason = "Password changed";
+
+                _unitOfWork.RefreshTokens.Update(session);
+            }
+
+            await _unitOfWork.SaveChangesAsync();
+
+            return new ApiOperationResultDto<bool>
+            {
+                Success = true,
+                Result = true,
+                Message = _localizer["PasswordChangeSuccess"]
+            };
+        }
+
+        public async Task<ApiOperationResultDto<List<SessionDto>>> GetMySessionsAsync(int userId)
+        {
+            var tokens = await _unitOfWork.RefreshTokens.GetActiveByUserIdAsync(userId);
+
+            var sessions = tokens
+                .Where(t => !t.IsRevoked && t.ExpiresAtUtc > DateTime.UtcNow)
+                .Select(t => new SessionDto
+                {
+                    Id = t.Id,
+                    CreatedAtUtc = t.CreatedAtUtc,
+                    ExpiresAtUtc = t.ExpiresAtUtc
+                })
+                .ToList();
+
+            return new ApiOperationResultDto<List<SessionDto>>
+            {
+                Success = true,
+                Result = sessions
+            };
+        }
+
+        public async Task<ApiOperationResultDto<bool>> RevokeSessionAsync(
+            int refreshTokenId,
+            int userId,
+            string? currentRefreshToken)
+        {
+            var token = await _unitOfWork.RefreshTokens.GetByIdAsync(refreshTokenId);
+
+            if (token == null || token.UserId != userId)
+            {
+                return new ApiOperationResultDto<bool>
+                {
+                    Success = false,
+                    Message = _localizer["InvalidToken"]
+                };
+            }
+
+            bool isCurrentSession = token.Token == currentRefreshToken;
+
+            if (!token.IsRevoked)
+            {
+                token.IsRevoked = true;
+                token.RevokedAtUtc = DateTime.UtcNow;
+                token.RevokedReason = "Manual session revocation";
+
+                _unitOfWork.RefreshTokens.Update(token);
+                await _unitOfWork.SaveChangesAsync();
+            }
+
+            return new ApiOperationResultDto<bool>
+            {
+                Success = true,
+                Result = isCurrentSession,
+                Message = _localizer["LogoutSuccess"]
+            };
+        }
+
+        public async Task<ApiOperationResultDto<bool>> RevokeAllSessionsAsync(int userId, string? exceptToken = null)
+        {
+            var sessions = await _unitOfWork.RefreshTokens.GetActiveByUserIdAsync(userId);
+
+            if (sessions == null || !sessions.Any())
+            {
+                return new ApiOperationResultDto<bool>
+                {
+                    Success = true,
+                    Result = true,
+                    Message = _localizer["LogoutSuccess"]
+                };
+            }
+
+            foreach (var session in sessions)
+            {
+                // Mantener la sesión actual (si viene definida)
+                if (!string.IsNullOrEmpty(exceptToken) && session.Token == exceptToken)
+                    continue;
+
+                // Evitar reprocesar tokens ya revocados
+                if (session.IsRevoked)
+                    continue;
+
+                session.IsRevoked = true;
+                session.RevokedAtUtc = DateTime.UtcNow;
+                session.RevokedReason = "Revoke all sessions";
+
+                _unitOfWork.RefreshTokens.Update(session);
+            }
+
+            await _unitOfWork.SaveChangesAsync();
+
+            return new ApiOperationResultDto<bool>
+            {
+                Success = true,
+                Result = true,
+                Message = _localizer["LogoutSuccess"]
+            };
+        }
+
     }
 }

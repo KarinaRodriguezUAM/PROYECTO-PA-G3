@@ -27,7 +27,7 @@ builder.Services.AddTransient<AuthenticationDelegatingHandler>();
 
 builder.Services.AddHttpClient("ApiClient", client =>
 {
-    client.BaseAddress = new Uri("https://localhost:44333/"); 
+    client.BaseAddress = new Uri("https://localhost:5001/"); 
 })
 .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
 {
@@ -37,7 +37,7 @@ builder.Services.AddHttpClient("ApiClient", client =>
 
 builder.Services.AddHttpClient<IAuthService, AuthService>(client =>
 {
-    client.BaseAddress = new Uri("https://localhost:44333/");
+    client.BaseAddress = new Uri("https://localhost:5001/");
 })
 .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
 {

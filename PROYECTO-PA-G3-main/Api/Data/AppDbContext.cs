@@ -26,10 +26,11 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
     public DbSet<User> Users => Set<User>();
 
+    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+
     public DbSet<OtpCode> OtpCodes => Set<OtpCode>();
 
-
-
+    public DbSet<PasswordResetRequest> PasswordResetRequests => Set<PasswordResetRequest>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -45,6 +46,42 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             entity.Property(x => x.IsActive).HasDefaultValue(true).IsRequired();
             entity.Property(x => x.CreatedAtUtc).IsRequired();
             entity.Property(x => x.UpdatedAtUtc).IsRequired();
+        });
+
+        modelBuilder.Entity<PasswordResetRequest>(entity =>
+        {
+            entity.ToTable("PasswordResetRequests");
+
+            entity.HasKey(x => x.Id);
+
+            entity.Property(x => x.UserId)
+                  .IsRequired();
+
+            entity.Property(x => x.SessionToken)
+                  .HasMaxLength(100)
+                  .IsRequired();
+
+            entity.Property(x => x.Code)
+                  .HasMaxLength(10)
+                  .IsRequired();
+
+            entity.Property(x => x.ExpiresAtUtc)
+                  .IsRequired();
+
+            entity.Property(x => x.IsUsed)
+                  .HasDefaultValue(false)
+                  .IsRequired();
+
+            entity.Property(x => x.CreatedAtUtc)
+                  .IsRequired();
+
+            entity.Property(x => x.UsedAtUtc)
+                  .IsRequired(false);
+
+            entity.HasOne(x => x.User)
+                  .WithMany()
+                  .HasForeignKey(x => x.UserId)
+                  .OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<Equipment>(entity =>
@@ -84,6 +121,13 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
                   .WithMany()
                   .HasForeignKey(e => e.UserId)
                   .OnDelete(DeleteBehavior.Cascade);
+
+            entity.Property(e => e.RevokedAtUtc)
+                  .IsRequired(false);
+
+            entity.Property(e => e.RevokedReason)
+                  .HasMaxLength(200)
+                  .IsRequired(false);
         });
 
         modelBuilder.Entity<Role>(entity =>
@@ -158,7 +202,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             entity.HasKey(x => x.Id);
             entity.Property(x => x.UserId).IsRequired();
             entity.Property(x => x.Code).HasMaxLength(10).IsRequired();
-            entity.Property(x => x.SessionToken).HasMaxLength(50).IsRequired();
+            entity.Property(x => x.SessionToken).HasMaxLength(100).IsRequired();
             entity.Property(x => x.ExpiresAtUtc).IsRequired();
             entity.Property(x => x.IsUsed).HasDefaultValue(false).IsRequired();
             entity.Property(x => x.CreatedAtUtc).IsRequired();

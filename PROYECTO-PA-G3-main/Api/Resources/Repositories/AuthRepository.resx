@@ -147,4 +147,31 @@
   <data name="OtpSent" xml:space="preserve">
     <value>Código OTP enviado correctamente.</value>
   </data>
+  <data name="ForgotPasswordEmailSent" xml:space="preserve">
+    <value>Si el correo está registrado, recibirás instrucciones para recuperar tu contraseña.</value>
+  </data>
+  <data name="UsedResetCode" xml:space="preserve">
+    <value>Este código ya fue utilizado.</value>
+  </data>
+  <data name="ExpiredResetCode" xml:space="preserve">
+    <value>El código de recuperación ha expirado.</value>
+  </data>
+  <data name="InvalidResetCode" xml:space="preserve">
+    <value>El código ingresado es incorrecto.</value>
+  </data>
+  <data name="NewPasswordMustBeDifferent" xml:space="preserve">
+    <value>La nueva contraseña debe ser diferente de la actual.</value>
+  </data>
+  <data name="PasswordResetSuccess" xml:space="preserve">
+    <value>La contraseña fue restablecida correctamente.</value>
+  </data>
+  <data name="InvalidCurrentPassword" xml:space="preserve">
+    <value>La contraseña actual es incorrecta.</value>
+  </data>
+  <data name="PasswordChangeSuccess" xml:space="preserve">
+    <value>La contraseña fue cambiada correctamente.</value>
+  </data>
+  <data name="PasswordChangeError" xml:space="preserve">
+    <value>Error al cambiar la contraseña</value>
+  </data>
 </root>

@@ -12,5 +12,7 @@
 
         public bool IsExpired => DateTime.UtcNow >= ExpiresAtUtc;
         public bool IsActive => !IsRevoked && !IsExpired;
+        public DateTime? RevokedAtUtc { get; set; }
+        public string? RevokedReason { get; set; }
     }
 }

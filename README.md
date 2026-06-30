@@ -378,3 +378,184 @@ Reemplazar la autenticación básica por un sistema con JWT de corta duración y
 ### Resultado
 
 Sistema de autenticación seguro con JWT y Refresh Tokens, cumpliendo el flujo completo de login, renovación de sesión y logout según los requisitos del proyecto.
+
+
+# Requerimiento 4 - Two-Factor Authentication (OTP)
+
+## Flujo implementado
+
+El proceso de autenticación fue ampliado para incorporar verificación en dos pasos mediante un código OTP enviado por correo electrónico.
+
+### Pasos para probar en Swagger o Postman
+
+1. Ejecutar la API y el cliente MVC.
+2. Enviar una solicitud a:
+
+```
+POST /api/Auth/Login
+```
+
+Ejemplo:
+
+```json
+{
+  "email": "usuario@correo.com",
+  "password": "Password123*"
+}
+```
+
+3. Si las credenciales son correctas, el sistema enviará un código OTP al correo del usuario y devolverá un `SessionToken`.
+
+4. Verificar el código recibido utilizando:
+
+```
+POST /api/Auth/VerifyOtp
+```
+
+Ejemplo:
+
+```json
+{
+  "sessionToken": "<SessionToken>",
+  "code": "123456"
+}
+```
+
+5. Si el código es válido, el sistema devuelve:
+
+* AccessToken (JWT)
+* RefreshToken
+
+Estos tokens permiten acceder a los endpoints protegidos.
+
+---
+
+## Prueba desde el Cliente MVC
+
+1. Iniciar sesión desde la pantalla **Login**.
+2. Ingresar correo y contraseña.
+3. El sistema redirige automáticamente a **VerifyOtp**.
+4. Introducir el código recibido por correo.
+5. Si el código es válido, el usuario ingresa al sistema.
+
+
+# Requerimiento 5 - Password Recovery and Session Management
+
+## Recuperación de contraseña
+
+### Swagger / Postman
+
+### 1. Solicitar recuperación
+
+```
+POST /api/Auth/ForgotPassword
+```
+
+```json
+{
+  "email": "usuario@correo.com"
+}
+```
+
+El sistema envía un código OTP de recuperación al correo del usuario y devuelve un mensaje genérico por motivos de seguridad.
+
+### 2. Restablecer contraseña
+
+```
+POST /api/Auth/ResetPassword
+```
+
+```json
+{
+  "sessionToken": "<SessionToken>",
+  "code": "123456",
+  "newPassword": "NuevaPassword123*",
+  "confirmPassword": "NuevaPassword123*"
+}
+```
+
+Si el código es válido:
+
+* Se actualiza la contraseña.
+* Se almacena utilizando hash.
+* Se revocan todos los Refresh Tokens activos.
+
+---
+
+## Cambio de contraseña
+
+Con un usuario autenticado ejecutar:
+
+```
+POST /api/Auth/ChangePassword
+```
+
+```json
+{
+  "currentPassword": "PasswordActual123*",
+  "newPassword": "NuevaPassword123*",
+  "confirmPassword": "NuevaPassword123*"
+}
+```
+
+Si la contraseña actual es correcta:
+
+* Se actualiza la contraseña.
+* Se revocan todas las sesiones activas excepto la sesión actual.
+
+---
+
+## Gestión de sesiones
+
+### Consultar sesiones activas
+
+```
+GET /api/Auth/sessions
+```
+
+Retorna la lista de Refresh Tokens activos del usuario autenticado.
+
+### Revocar una sesión
+
+```
+POST /api/Auth/revoke-session/{id}
+```
+
+Revoca únicamente la sesión seleccionada.
+
+### Revocar todas las sesiones
+
+```
+POST /api/Auth/RevokeAllSessions
+```
+
+Revoca todas las sesiones activas del usuario autenticado.
+
+---
+
+## Prueba desde el Cliente MVC
+
+### Recuperación de contraseña
+
+1. Abrir la vista **ForgotPassword**.
+2. Ingresar el correo electrónico.
+3. Revisar el correo y obtener el código OTP.
+4. Abrir la vista **ResetPassword**.
+5. Ingresar el código OTP y la nueva contraseña.
+6. Iniciar sesión nuevamente con la contraseña actualizada.
+
+### Cambio de contraseña
+
+1. Iniciar sesión.
+2. Abrir la vista **ChangePassword**.
+3. Ingresar la contraseña actual.
+4. Ingresar la nueva contraseña y confirmarla.
+5. Guardar los cambios.
+
+### Sesiones activas
+
+1. Iniciar sesión.
+2. Abrir la vista **MySessions**.
+3. Visualizar las sesiones activas.
+4. Utilizar **Cerrar sesión** para revocar una sesión específica.
+5. Utilizar **Cerrar todas las sesiones** para revocar todas las sesiones activas.

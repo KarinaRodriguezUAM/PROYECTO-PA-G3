@@ -1,4 +1,3 @@
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Uam.LabHelpDesk.Api.Data;
 using Uam.LabHelpDesk.Api.Interfaces;
@@ -40,4 +39,8 @@ public class UnitOfWork(
 
     public Task<int> SaveChangesAsync(CancellationToken cancellationToken = default) =>
         context.SaveChangesAsync(cancellationToken);
+    public IPasswordResetRepository PasswordResets =>
+    _passwordResets ??= new PasswordResetRepository(context);
+
+    private IPasswordResetRepository? _passwordResets;
 }

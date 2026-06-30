@@ -30,5 +30,18 @@ namespace Uam.LabHelpDesk.Api.Repositories
         {
             _context.Set<RefreshToken>().Update(refreshToken);
         }
+
+        public async Task<List<RefreshToken>> GetActiveByUserIdAsync(int userId)
+        {
+            return await _context.Set<RefreshToken>()
+                .Where(rt => rt.UserId == userId && !rt.IsRevoked)
+                .ToListAsync();
+        }
+
+        public async Task<RefreshToken?> GetByIdAsync(int id)
+        {
+            return await _context.Set<RefreshToken>()
+                .FirstOrDefaultAsync(rt => rt.Id == id);
+        }
     }
 }

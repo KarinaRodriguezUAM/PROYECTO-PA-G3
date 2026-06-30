@@ -37,11 +37,6 @@ namespace Uam.LabHelpDesk.Api.Services
                 if (password == "pass" || password == "Admin" || senderEmail == "sender@gmail.com")
                 {
                     _logger.LogWarning("MODO DESARROLLO: Contraseña SMTP es 'pass' o 'Admin', o remitente es default. Bypasseando envío real de correo. Código enviado a consola.");
-                    Console.WriteLine("==================================================");
-                    Console.WriteLine($"[DUMMY SMTP] Enviando correo a: {toEmail}");
-                    Console.WriteLine($"Asunto: {subject}");
-                    Console.WriteLine($"Cuerpo: {body}");
-                    Console.WriteLine("==================================================");
                     return true;
                 }
 

@@ -17,117 +17,190 @@ public class AuthController : ControllerBase
         _authRepository = authRepository;
     }
 
+    // =========================
+    // LOGIN
+    // =========================
     [AllowAnonymous]
     [HttpPost(nameof(Login))]
-    [ProducesResponseType(typeof(ApiOperationResultDto<Uam.LabHelpDesk.Api.DTOs.Auth.LoginResponseDto>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ApiOperationResultDto<Uam.LabHelpDesk.Api.DTOs.Auth.LoginResponseDto>), StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(typeof(ApiOperationResultDto<object>), StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> Login(
-        [FromBody] Uam.LabHelpDesk.Api.DTOs.Auth.LoginRequestDto request)
+    public async Task<IActionResult> Login([FromBody] LoginRequestDto request)
     {
         if (!ModelState.IsValid)
-        {
-            return BadRequest(new ApiOperationResultDto<object>
-            {
-                Success = false,
-                Code = StatusCodes.Status400BadRequest.ToString(),
-                Message = "Los datos proporcionados no son válidos."
-            });
-        }
+            return BadRequest(ModelError());
 
         var result = await _authRepository.LoginAsync(request);
 
-        if (!result.Success)
-        {
-            return Unauthorized(result);
-        }
-
-        result.Code = StatusCodes.Status200OK.ToString();
-
-        return Ok(result);
+        return result.Success ? Ok(result) : Unauthorized(result);
     }
 
+    // =========================
+    // VERIFY OTP
+    // =========================
     [AllowAnonymous]
     [HttpPost(nameof(VerifyOtp))]
-    [ProducesResponseType(typeof(ApiOperationResultDto<AuthResponseDto>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ApiOperationResultDto<AuthResponseDto>), StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(typeof(ApiOperationResultDto<object>), StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> VerifyOtp(
-        [FromBody] VerifyOtpRequestDto request)
+    public async Task<IActionResult> VerifyOtp([FromBody] VerifyOtpRequestDto request)
     {
         if (!ModelState.IsValid)
-        {
-            return BadRequest(new ApiOperationResultDto<object>
-            {
-                Success = false,
-                Code = StatusCodes.Status400BadRequest.ToString(),
-                Message = "Los datos proporcionados no son válidos."
-            });
-        }
+            return BadRequest(ModelError());
 
         var result = await _authRepository.VerifyOtpAsync(request);
 
-        if (!result.Success)
-        {
-            return Unauthorized(result);
-        }
-
-        result.Code = StatusCodes.Status200OK.ToString();
-
-        return Ok(result);
+        return result.Success ? Ok(result) : Unauthorized(result);
     }
 
+    // =========================
+    // REFRESH TOKEN
+    // =========================
     [AllowAnonymous]
     [HttpPost(nameof(RefreshToken))]
-    [ProducesResponseType(typeof(ApiOperationResultDto<AuthResponseDto>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ApiOperationResultDto<AuthResponseDto>), StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(typeof(ApiOperationResultDto<object>), StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> RefreshToken(
-        [FromBody] Uam.LabHelpDesk.Api.DTOs.Auth.RefreshTokenRequestDto request)
+    public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequestDto request)
     {
         if (!ModelState.IsValid)
-        {
-            return BadRequest(new ApiOperationResultDto<object>
-            {
-                Success = false,
-                Code = StatusCodes.Status400BadRequest.ToString(),
-                Message = "Los datos proporcionados no son válidos."
-            });
-        }
+            return BadRequest(ModelError());
 
         var result = await _authRepository.RefreshTokenAsync(request);
 
-        if (!result.Success)
-        {
-            return Unauthorized(result);
-        }
+        return result.Success ? Ok(result) : Unauthorized(result);
+    }
 
-        result.Code = StatusCodes.Status200OK.ToString();
+    // =========================
+    // LOGOUT
+    // =========================
+    [Authorize]
+    [HttpPost(nameof(Logout))]
+    public async Task<IActionResult> Logout([FromBody] RefreshTokenRequestDto request)
+    {
+        var result = await _authRepository.LogoutAsync(request);
+        return Ok(result);
+    }
+
+    // =========================
+    // FORGOT PASSWORD
+    // =========================
+    [AllowAnonymous]
+    [HttpPost(nameof(ForgotPassword))]
+    public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequestDto request)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelError());
+
+        var result = await _authRepository.ForgotPasswordAsync(request);
+
+        return Ok(result); // siempre OK por seguridad (aunque el usuario no exista)
+    }
+
+
+    [AllowAnonymous]
+    [HttpPost(nameof(ResetPassword))]
+    public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequestDto request)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelError());
+        var result = await _authRepository.ResetPasswordAsync(request);
+
+        return result.Success ? Ok(result) : BadRequest(result);
+    }
+
+
+    // =========================
+    // CHANGE PASSWORD (usuario logueado)
+    // =========================
+    [Authorize]
+    [HttpPost(nameof(ChangePassword))]
+    public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequestDto request)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelError());
+
+        var userIdClaim = User.FindFirst("UserId")?.Value;
+
+        if (string.IsNullOrEmpty(userIdClaim))
+            return Unauthorized();
+
+        int userId = int.Parse(userIdClaim);
+
+        var refreshToken =
+            Request.Headers["X-Refresh-Token"].FirstOrDefault();
+
+        var result = await _authRepository.ChangePasswordAsync(
+            request,
+            userId,
+            refreshToken
+        );
+
+        return result.Success ? Ok(result) : BadRequest(result);
+    }
+
+    // =========================
+    // SESIONES ACTIVAS
+    // =========================
+    [Authorize]
+    [HttpGet("sessions")]
+    public async Task<IActionResult> GetMySessions()
+    {
+        var userId = int.Parse(User.FindFirst("UserId")?.Value ?? "0");
+
+        var result = await _authRepository.GetMySessionsAsync(userId);
 
         return Ok(result);
     }
 
-    [AllowAnonymous]
-    [HttpPost(nameof(Logout))]
-    [ProducesResponseType(typeof(ApiOperationResultDto<bool>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ApiOperationResultDto<object>), StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> Logout(
-        [FromBody] Uam.LabHelpDesk.Api.DTOs.Auth.RefreshTokenRequestDto request)
+    // =========================
+    // REVOCAR SESIÓN
+    // =========================
+    [Authorize]
+    [HttpPost("revoke-session/{id}")]
+    public async Task<IActionResult> RevokeSession(int id)
     {
-        if (!ModelState.IsValid)
-        {
-            return BadRequest(new ApiOperationResultDto<object>
-            {
-                Success = false,
-                Code = StatusCodes.Status400BadRequest.ToString(),
-                Message = "Los datos proporcionados no son válidos."
-            });
-        }
+        var userIdClaim = User.FindFirst("UserId")?.Value;
 
-        var result = await _authRepository.LogoutAsync(request);
+        if (string.IsNullOrEmpty(userIdClaim))
+            return Unauthorized();
 
-        result.Code = StatusCodes.Status200OK.ToString();
+        int userId = int.Parse(userIdClaim);
+
+        var currentRefreshToken =
+            Request.Headers["X-Refresh-Token"].FirstOrDefault();
+
+        var result = await _authRepository.RevokeSessionAsync(
+            id,
+            userId,
+            currentRefreshToken);
 
         return Ok(result);
+    }
+
+    // =========================
+    // HELPERS
+    // =========================
+    private ApiOperationResultDto<object> ModelError()
+    {
+        return new ApiOperationResultDto<object>
+        {
+            Success = false,
+            Code = StatusCodes.Status400BadRequest.ToString(),
+            Message = "Los datos proporcionados no son válidos."
+        };
+    }
+
+    [Authorize]
+    [HttpPost("RevokeAllSessions")]
+    public async Task<IActionResult> RevokeAllSessions()
+    {
+        var userIdClaim = User.FindFirst("UserId")?.Value;
+
+        if (string.IsNullOrEmpty(userIdClaim))
+            return Unauthorized();
+
+        int userId = int.Parse(userIdClaim);
+
+        var refreshToken =
+            Request.Headers["X-Refresh-Token"].FirstOrDefault();
+
+        var result = await _authRepository.RevokeAllSessionsAsync(
+            userId,
+            refreshToken
+        );
+
+        return result.Success ? Ok(result) : BadRequest(result);
     }
 }

@@ -1,0 +1,43 @@
+﻿@using Uam.LabHelpDesk.MvcClient.Models.Auth
+@model List<SessionViewModel>
+
+<h2 class="mb-3">Sesiones activas</h2>
+
+@if (Model == null || !Model.Any())
+{
+    <div class="alert alert-info">
+        No hay sesiones activas o no se pudieron cargar.
+    </div>
+}
+else
+{
+    <form asp-action="RevokeAllSessions" method="post" class="mb-3">
+        <button type="submit" class="btn btn-danger">
+            Cerrar todas las sesiones
+        </button>
+    </form>
+
+    <hr />
+
+    @foreach (var s in Model)
+    {
+        <div class="border p-3 mb-2 rounded bg-light">
+
+            <p class="mb-1">
+                <strong>Creada:</strong> @s.CreatedAtUtc
+            </p>
+
+            <p class="mb-2">
+                <strong>Expira:</strong> @s.ExpiresAtUtc
+            </p>
+
+            <form asp-action="RevokeSession" method="post">
+                <input type="hidden" name="id" value="@s.Id" />
+                <button type="submit" class="btn btn-sm btn-outline-danger">
+                    Cerrar sesión
+                </button>
+            </form>
+
+        </div>
+    }
+}

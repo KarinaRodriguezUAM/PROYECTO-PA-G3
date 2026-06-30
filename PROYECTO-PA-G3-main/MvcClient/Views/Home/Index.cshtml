@@ -1,144 +1,61 @@
 ﻿@{
     ViewData["Title"] = "Inicio";
+    Layout = "_Layout";
 }
 
-<div class="text-center mb-5">
+<div class="container-fluid">
 
-    <h1 style="
-        font-size:72px;
-        font-weight:800;
-        color:#0f2d6b;">
-        UAM Lab Help Desk
-    </h1>
+    <div class="mb-4">
+        <h1 class="fw-bold text-primary">UAM Lab Help Desk</h1>
+        <p class="text-muted">
+            Plataforma centralizada para la administración de laboratorios, equipos y usuarios.
+        </p>
+    </div>
 
-    <p style="
-        font-size:24px;
-        color:#6b7280;">
-        Plataforma centralizada para la administración de laboratorios,
-        equipos tecnológicos y usuarios.
-    </p>
+    <div class="row g-4">
 
-</div>
-
-<div class="row g-4">
-
-    <div class="col-md-3">
-
-        <div class="card">
-
-            <div class="card-body">
-
-                <small class="text-muted text-uppercase">
-                    Laboratorios
-                </small>
-
-                <h1 id="totalLabs"
-                    style="font-size:52px;font-weight:700;color:#0f2d6b;">
-                    0
-                </h1>
-
+        <div class="col-md-3">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <small class="text-muted">Laboratorios</small>
+                    <h2 id="totalLabs">0</h2>
+                </div>
             </div>
+        </div>
 
+        <div class="col-md-3">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <small class="text-muted">Equipos</small>
+                    <h2 id="totalEquipment">0</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <small class="text-muted">Usuarios</small>
+                    <h2 id="totalUsers">0</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <small class="text-muted">Roles</small>
+                    <h2 id="totalRoles">0</h2>
+                </div>
+            </div>
         </div>
 
     </div>
 
-    <div class="col-md-3">
-
-        <div class="card">
-
-            <div class="card-body">
-
-                <small class="text-muted text-uppercase">
-                    Equipos
-                </small>
-
-                <h1 id="totalEquipment"
-                    style="font-size:52px;font-weight:700;color:#0f2d6b;">
-                    0
-                </h1>
-
-            </div>
-
-        </div>
-
-    </div>
-
-    <div class="col-md-3">
-
-        <div class="card">
-
-            <div class="card-body">
-
-                <small class="text-muted text-uppercase">
-                    Usuarios
-                </small>
-
-                <h1 id="totalUsers"
-                    style="font-size:52px;font-weight:700;color:#0f2d6b;">
-                    0
-                </h1>
-
-            </div>
-
-        </div>
-
-    </div>
-
-    <div class="col-md-3">
-
-        <div class="card">
-
-            <div class="card-body">
-
-                <small class="text-muted text-uppercase">
-                    Roles
-                </small>
-
-                <h1 id="totalRoles"
-                    style="font-size:52px;font-weight:700;color:#0f2d6b;">
-                    0
-                </h1>
-
-            </div>
-
-        </div>
-
-    </div>
-
-</div>
-
-<div class="mt-5">
-
-    <div class="card overflow-hidden">
-
-        <div style="position:relative;">
-
-            <img src="~/images/helpdesk-banner.jpg"
-                 style="
-            width:100%;
-            height:550px;
-            object-fit:cover;" />
-
-            <div style="
-                position:absolute;
-                top:0;
-                left:0;
-                width:100%;
-                height:100%;
-                background:rgba(0,0,0,.45);
-                display:flex;
-                flex-direction:column;
-                justify-content:center;
-                align-items:center;
-                color:white;">
-
-              
-
-            </div>
-
-        </div>
-
+    <div class="mt-5">
+        <img src="~/images/helpdesk-banner.jpg"
+             class="img-fluid rounded shadow"
+             style="height:450px;object-fit:cover;width:100%;" />
     </div>
 
 </div>
@@ -147,60 +64,47 @@
 
     <script>
 
+        console.log("SCRIPT HOME CARGADO");
+
         async function loadDashboard(){
 
+            console.log("loadDashboard ejecutándose");
+
             try{
-
-                const labs =
-                    await fetch('/Laboratories/GetAll')
-                    .then(r => r.json());
-
-                document.getElementById('totalLabs').innerText =
-                    labs?.length ?? 0;
-
-            }catch{
-                document.getElementById('totalLabs').innerText = '0';
+                const labs = await fetch('/Laboratories/GetAll').then(r => r.json());
+                console.log("Labs:", labs);
+                document.getElementById('totalLabs').innerText = labs.length;
+            }catch(ex){
+                console.error("Labs", ex);
             }
 
             try{
-
-                const equipment =
-                    await fetch('/Equipment/GetAll')
-                    .then(r => r.json());
-
-                document.getElementById('totalEquipment').innerText =
-                    equipment?.length ?? 0;
-
-            }catch{
-                document.getElementById('totalEquipment').innerText = '0';
+                const equipment = await fetch('/Equipment/GetAll').then(r => r.json());
+                console.log("Equipment:", equipment);
+                document.getElementById('totalEquipment').innerText = equipment.length;
+            }catch(ex){
+                console.error("Equipment", ex);
             }
 
             try{
-
-                const users =
-                    await fetch('/Users/GetAll')
-                    .then(r => r.json());
-
-                document.getElementById('totalUsers').innerText =
-                    users?.length ?? 0;
-
-            }catch{
-                document.getElementById('totalUsers').innerText = '0';
+                const users = await fetch('/Users/GetAll').then(r => r.json());
+                console.log("Users:", users);
+                document.getElementById('totalUsers').innerText = users.length;
+            }catch(ex){
+                console.error("Users", ex);
             }
 
             try{
-
-                const roles =
-                    await fetch('/Roles/GetAll')
-                    .then(r => r.json());
-
-                document.getElementById('totalRoles').innerText =
-                    roles?.length ?? 0;
-
-            }catch{
-                document.getElementById('totalRoles').innerText = '0';
+                const roles = await fetch('/Roles/GetAll').then(r => r.json());
+                console.log("Roles:", roles);
+                document.getElementById('totalRoles').innerText = roles.length;
+            }catch(ex){
+                console.error("Roles", ex);
             }
+
         }
+
+        window.loadDashboard = loadDashboard;
 
         loadDashboard();
 

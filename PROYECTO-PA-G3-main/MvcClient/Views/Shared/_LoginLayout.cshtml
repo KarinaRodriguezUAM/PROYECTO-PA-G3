@@ -12,270 +12,114 @@
     <link rel="stylesheet"
           href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
 
-    <link rel="stylesheet"
-          href="~/css/site.css"
-          asp-append-version="true" />
-
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
 
-        html, body {
-            height: 100%;
-            width: 100%;
-        }
-
-        body {
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            position: relative;
-            overflow: hidden;
-        }
-
-        /* Elemento decorativo de fondo */
-        body::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            right: -50%;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(circle, rgba(51, 65, 85, 0.1) 1px, transparent 1px);
-            background-size: 50px 50px;
-            animation: float 20s ease-in-out infinite;
-            pointer-events: none;
-        }
-
-        @@keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(20px); }
-        }
-
-        .login-wrapper {
-            position: relative;
-            z-index: 1;
-            width: 100%;
-            max-width: 500px;
-            padding: 20px;
-        }
-
-        .login-container {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 0;
-            border-radius: 16px;
-            overflow: hidden;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
-            backdrop-filter: blur(10px);
-        }
-
-        .login-card {
-            background: white;
-            padding: 60px 50px;
-        }
-
-        .login-brand {
-            text-align: center;
-            margin-bottom: 50px;
-        }
-
-        .login-brand-icon {
-            font-size: 64px;
-            color: #0f172a;
-            margin-bottom: 15px;
-            display: block;
-        }
-
-        .login-brand-title {
-            font-size: 32px;
-            font-weight: 700;
-            color: #0f172a;
-            margin: 0;
-            line-height: 1.2;
-        }
-
-        .login-brand-subtitle {
-            font-size: 14px;
-            color: #64748b;
-            margin-top: 8px;
-            font-weight: 500;
-        }
-
-        .login-form-title {
-            font-size: 28px;
-            font-weight: 700;
-            color: #0f172a;
-            margin-bottom: 35px;
-            text-align: center;
-        }
-
-        .form-group {
-            margin-bottom: 25px;
-        }
-
-        .form-label {
-            display: block;
-            font-weight: 600;
-            color: #1e293b;
-            margin-bottom: 10px;
-            font-size: 15px;
-        }
-
-        .form-control {
-            width: 100%;
-            padding: 12px 16px;
-            border: 2px solid #e2e8f0;
-            border-radius: 8px;
-            font-size: 15px;
-            transition: all 0.3s ease;
-            background: #f8fafc;
-        }
-
-        .form-control:focus {
-            background: white;
-            border-color: #0f172a;
-            box-shadow: 0 0 0 4px rgba(15, 23, 42, 0.08);
-            outline: none;
-        }
-
-        .form-control::placeholder {
-            color: #94a3b8;
-        }
-
-        .validation-summary {
-            background: #fee2e2;
-            border-left: 4px solid #dc2626;
-            color: #991b1b;
-            padding: 14px 16px;
-            border-radius: 6px;
-            margin-bottom: 25px;
-            font-size: 14px;
-        }
-
-        .validation-summary ul {
-            margin: 0;
-            padding-left: 20px;
-        }
-
-        .text-danger {
-            color: #dc2626;
-            font-size: 13px;
-            margin-top: 6px;
-            display: block;
-        }
-
-        .btn-login {
-            width: 100%;
-            padding: 14px;
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-            border: none;
-            color: white;
-            font-weight: 600;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 16px;
-            transition: all 0.3s ease;
-            margin-top: 10px;
-            box-shadow: 0 4px 15px rgba(15, 23, 42, 0.3);
-        }
-
-        .btn-login:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(15, 23, 42, 0.4);
-            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
-        }
-
-        .btn-login:active {
-            transform: translateY(0px);
-        }
-
-        /* Footer */
-        footer {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            text-align: center;
-            padding: 20px;
-            color: rgba(255, 255, 255, 0.6);
-            font-size: 13px;
-            z-index: 0;
-        }
-
-        /* Responsive */
-        @@media (max-width: 768px) {
-            .login-card {
-                padding: 40px 30px;
-            }
-
-            .login-brand-icon {
-                font-size: 48px;
-            }
-
-            .login-brand-title {
-                font-size: 26px;
-            }
-
-            .login-form-title {
-                font-size: 24px;
+            body {
+                margin: 0;
+                min-height: 100vh;
+                background: linear-gradient(135deg,#0f172a 0%,#1e293b 100%);
+                font-family: "Segoe UI",sans-serif;
             }
 
             .login-wrapper {
-                max-width: 100%;
+                min-height: 100vh;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                padding: 30px;
             }
-        }
 
-        @@media (max-width: 480px) {
             .login-card {
-                padding: 30px 20px;
+                width: 100%;
+                max-width: 500px;
+                background: #fff;
+                border-radius: 18px;
+                padding: 45px;
+                box-shadow: 0 20px 60px rgba(0,0,0,.35);
             }
 
             .login-brand {
-                margin-bottom: 35px;
+                text-align: center;
+                margin-bottom: 30px;
+            }
+
+            .login-brand-icon {
+                font-size: 60px;
+                color: #0f172a;
             }
 
             .login-form-title {
-                font-size: 22px;
-                margin-bottom: 25px;
+                text-align: center;
+                font-weight: 700;
+                margin-bottom: 30px;
             }
 
             .form-group {
-                margin-bottom: 18px;
+                margin-bottom: 20px;
             }
-        }
+
+            .form-control {
+                height: 48px;
+            }
+
+            .btn-login {
+                width: 100%;
+                height: 48px;
+                background: #0f172a;
+                color: #fff;
+                border: none;
+                border-radius: 8px;
+                font-weight: 600;
+                transition: .2s;
+            }
+
+                .btn-login:hover {
+                    background: #1e293b;
+                    color: #fff;
+                }
+
+            .validation-summary {
+                margin-bottom: 20px;
+            }
+
+            footer {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                width: 100%;
+                text-align: center;
+                padding: 15px;
+                color: rgba(255,255,255,.65);
+                font-size: 13px;
+            }
+
     </style>
 </head>
 
 <body>
 
     <div class="login-wrapper">
-        <div class="login-container">
-            <div class="login-card">
-                <div class="login-brand">
-                    <i class="bi bi-headset login-brand-icon"></i>
-                    <h1 class="login-brand-title">UAM Help Desk</h1>
-                    <p class="login-brand-subtitle">Gestión de Laboratorios</p>
-                </div>
 
-                @RenderBody()
+        <div class="login-card">
+
+            <div class="login-brand">
+                <i class="bi bi-headset login-brand-icon"></i>
+                <h2>UAM Help Desk</h2>
             </div>
+
+            @RenderBody()
+
         </div>
+
     </div>
 
     <footer>
-        © 2026 UAM Lab Help Desk | Desarrollado por Grupo 3 Programación Avanzada
+        © 2026 UAM Lab Help Desk
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-    @await RenderSectionAsync("Scripts", required: false)
+    @RenderSection("Scripts", required: false)
 
 </body>
 </html>
