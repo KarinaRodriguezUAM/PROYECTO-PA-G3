@@ -1,43 +1,93 @@
 ﻿@using Uam.LabHelpDesk.MvcClient.Models.Auth
 @model List<SessionViewModel>
 
-<h2 class="mb-3">Sesiones activas</h2>
+@{
+    ViewData["Title"] = "Sesiones Activas";
+}
+
+<h2 class="mb-4">
+    <i class="bi bi-shield-lock"></i>
+    Sesiones Activas
+</h2>
 
 @if (Model == null || !Model.Any())
 {
     <div class="alert alert-info">
-        No hay sesiones activas o no se pudieron cargar.
+        <i class="bi bi-info-circle"></i>
+        No hay sesiones activas.
     </div>
 }
 else
 {
-    <form asp-action="RevokeAllSessions" method="post" class="mb-3">
-        <button type="submit" class="btn btn-danger">
-            Cerrar todas las sesiones
-        </button>
-    </form>
+    <div class="mb-4">
 
-    <hr />
+        <form asp-action="RevokeAllSessions" method="post">
 
-    @foreach (var s in Model)
-    {
-        <div class="border p-3 mb-2 rounded bg-light">
+            <button type="submit" class="btn btn-danger">
+                <i class="bi bi-x-octagon"></i>
+                Cerrar todas las sesiones
+            </button>
 
-            <p class="mb-1">
-                <strong>Creada:</strong> @s.CreatedAtUtc
-            </p>
+        </form>
 
-            <p class="mb-2">
-                <strong>Expira:</strong> @s.ExpiresAtUtc
-            </p>
+    </div>
 
-            <form asp-action="RevokeSession" method="post">
-                <input type="hidden" name="id" value="@s.Id" />
-                <button type="submit" class="btn btn-sm btn-outline-danger">
-                    Cerrar sesión
-                </button>
-            </form>
+    <div class="row">
 
-        </div>
-    }
+        @foreach (var s in Model)
+        {
+            <div class="col-lg-6 mb-4">
+
+                <div class="card shadow-sm h-100">
+
+                    <div class="card-body">
+
+                        @if (s.IsCurrentSession)
+                        {
+                            <span class="badge bg-success mb-3">
+                                <i class="bi bi-check-circle"></i>
+                                Sesión actual
+                            </span>
+                        }
+
+                        <p class="mb-3">
+                            <i class="bi bi-calendar-event"></i>
+                            <strong>Creada</strong><br />
+                            @s.CreatedAtUtc
+                        </p>
+
+                        <p class="mb-4">
+                            <i class="bi bi-clock-history"></i>
+                            <strong>Expira</strong><br />
+                            @s.ExpiresAtUtc
+                        </p>
+
+                    </div>
+
+                    <div class="card-footer bg-white">
+
+                        <form asp-action="RevokeSession" method="post">
+
+                            <input type="hidden"
+                                   name="id"
+                                   value="@s.Id" />
+
+                            <button type="submit"
+                                    class="btn btn-outline-danger w-100">
+
+                                <i class="bi bi-box-arrow-right"></i>
+                                Cerrar sesión
+
+                            </button>
+
+                        </form>
+
+                    </div>
+
+                </div>
+
+            </div>
+        }
+
+    </div>
 }

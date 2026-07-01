@@ -104,15 +104,24 @@ namespace Uam.LabHelpDesk.MvcClient.Controllers
 
             var result = await authService.ForgotPasswordAsync(model);
 
-            if (result == null || !result.Success)
+            if (result == null)
             {
-                ModelState.AddModelError("", result?.Message ?? "Error inesperado");
+                ModelState.AddModelError("", "Error inesperado.");
                 return View(model);
             }
 
-            HttpContext.Session.SetString("ResetSessionToken", result.Result ?? "");
+            // Siempre mostrar el mismo mensaje
+            TempData["Message"] = result.Message;
 
-            return RedirectToAction(nameof(ResetPassword));
+            // Si existe SessionToken, continuar al siguiente paso
+            if (!string.IsNullOrWhiteSpace(result.Result))
+            {
+                HttpContext.Session.SetString("ResetSessionToken", result.Result);
+                return RedirectToAction(nameof(ResetPassword));
+            }
+
+            // Si no existe SessionToken, regresar mostrando el mensaje genérico
+            return RedirectToAction(nameof(ForgotPassword));
         }
 
         [HttpGet]
