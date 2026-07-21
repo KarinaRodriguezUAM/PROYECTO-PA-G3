@@ -1,0 +1,311 @@
+@{
+    ViewData["Title"] = "Reportes de Averías";
+}
+
+<div id="alertContainer"></div>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+
+    <div>
+
+        <h2 class="fw-bold mb-1">
+            Gestión de Reportes de Averías
+        </h2>
+
+        <p class="text-muted mb-0">
+            Administración de reportes realizados por los instructores.
+        </p>
+
+    </div>
+
+    <a asp-controller="FaultReports"
+       asp-action="Create"
+       class="btn btn-dark px-4">
+
+        <i class="bi bi-plus-circle me-2"></i>
+
+        Nuevo Reporte
+
+    </a>
+
+</div>
+
+<div class="table-responsive">
+
+    <table class="table table-bordered table-hover align-middle">
+
+        <thead class="table-dark">
+
+            <tr>
+
+                <th>#</th>
+                <th>Equipo</th>
+                <th>Título</th>
+                <th>Reportado por</th>
+                <th>Técnico Asignado</th>
+                <th>Prioridad</th>
+                <th>Estado</th>
+                <th>Fecha</th>
+                <th width="160">Acciones</th>
+
+            </tr>
+
+        </thead>
+
+        <tbody id="faultReportBody">
+
+            <tr>
+
+                <td colspan="9" class="text-center">
+
+                    Cargando...
+
+                </td>
+
+            </tr>
+
+        </tbody>
+
+    </table>
+
+</div>
+
+@section Scripts {
+
+    <script>
+        const userRole = '@(User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value ?? User.FindFirst("role")?.Value ?? "")';
+
+        document.addEventListener("DOMContentLoaded",()=>{
+
+            loadFaultReports();
+
+        });
+
+        function showAlert(type,message){
+
+            const container=document.getElementById("alertContainer");
+
+            container.innerHTML=`
+                <div class="alert alert-${type} alert-dismissible fade show">
+
+                    ${message}
+
+                    <button class="btn-close"
+                            data-bs-dismiss="alert">
+                    </button>
+
+                </div>`;
+
+            setTimeout(()=>{
+
+                container.innerHTML="";
+
+            },4000);
+
+        }
+
+        async function loadFaultReports(){
+
+            const tbody=document.getElementById("faultReportBody");
+
+            tbody.innerHTML=`
+                <tr>
+                    <td colspan="9" class="text-center">
+                        Cargando...
+                    </td>
+                </tr>`;
+
+            try{
+
+                const response=
+                    await fetch("/FaultReports/GetAll");
+
+                if(!response.ok){
+
+                    throw new Error();
+
+                }
+
+                const data=
+                    await response.json();
+
+                tbody.innerHTML="";
+
+                if(data.length===0){
+
+                    tbody.innerHTML=`
+                        <tr>
+                            <td colspan="9"
+                                class="text-center">
+
+                                No existen reportes registrados.
+
+                            </td>
+                        </tr>`;
+
+                    return;
+
+                }
+
+                data.forEach(report=>{
+                    let actionButtons = `
+                        <button class="btn btn-primary btn-sm me-1"
+                                onclick="detail(${report.id})">
+                            <i class="bi bi-eye"></i> Ver
+                        </button>
+                    `;
+
+                    if (report.status === "Pending" && userRole === "Technician") {
+                        actionButtons += `
+                            <button class="btn btn-success btn-sm"
+                                    onclick="assign(${report.id})">
+                                <i class="bi bi-person-plus"></i> Asignar
+                            </button>
+                        `;
+                    }
+
+                    tbody.innerHTML+=`
+
+                    <tr>
+
+                        <td>${report.id}</td>
+
+                        <td>${report.equipmentCode}</td>
+
+                        <td>${report.title}</td>
+
+                        <td>${report.reportedBy}</td>
+
+                        <td>${report.assignedToUser || '<span class="text-muted">Sin asignar</span>'}</td>
+
+                        <td>${priorityBadge(report.priority)}</td>
+
+                        <td>${statusBadge(report.status)}</td>
+
+                        <td>${new Date(report.reportedAtUtc).toLocaleDateString()}</td>
+
+                        <td>
+                            <div class="d-flex gap-2">
+                                ${actionButtons}
+                            </div>
+                        </td>
+
+                    </tr>`;
+
+                });
+
+            }
+            catch{
+
+                tbody.innerHTML=`
+                    <tr>
+                        <td colspan="9"
+                            class="text-center text-danger">
+
+                            No fue posible cargar la información.
+
+                        </td>
+                    </tr>`;
+
+                showAlert(
+                    "danger",
+                    "Ocurrió un error al consultar los reportes."
+                );
+
+            }
+
+        }
+
+        function statusBadge(status){
+
+            switch(status){
+
+                case "Pending":
+
+                    return `<span class="badge bg-warning text-dark">Pendiente</span>`;
+
+                case "InProgress":
+
+                    return `<span class="badge bg-primary">In Progress</span>`;
+
+                case "Resolved":
+
+                    return `<span class="badge bg-info">Resuelto</span>`;
+
+                case "Closed":
+
+                    return `<span class="badge bg-success">Cerrado</span>`;
+
+                default:
+
+                    return `<span class="badge bg-secondary">${status}</span>`;
+
+            }
+
+        }
+
+        function priorityBadge(priority){
+
+            switch(priority){
+
+                case "Low":
+
+                    return `<span class="badge bg-success">Baja</span>`;
+
+                case "Medium":
+
+                    return `<span class="badge bg-primary">Media</span>`;
+
+                case "High":
+
+                    return `<span class="badge bg-warning text-dark">Alta</span>`;
+
+                case "Critical":
+
+                    return `<span class="badge bg-danger">Crítica</span>`;
+
+                default:
+
+                    return `<span class="badge bg-secondary">${priority}</span>`;
+
+            }
+
+        }
+
+        function detail(id){
+
+            window.location=`/FaultReports/Detail/${id}`;
+
+        }
+
+        function assign(id){
+            showCustomConfirmation(
+                "Asignar Reporte",
+                "¿Está seguro de que desea asignarse este reporte de avería?",
+                "bg-success",
+                "btn-success",
+                async () => {
+                    showLoading("Asignando reporte...");
+                    try {
+                        const response = await fetch(`/FaultReports/Assign?id=${id}`, {
+                            method: 'POST'
+                        });
+                        const result = await response.json();
+                        if(response.ok){
+                            showAlert("success", result.message || "Reporte asignado correctamente.");
+                            loadFaultReports();
+                        } else {
+                            showAlert("danger", result.message || "Error al asignar el reporte.");
+                        }
+                    } catch {
+                        showAlert("danger", "Error al intentar asignar el reporte.");
+                    } finally {
+                        hideLoading();
+                    }
+                }
+            );
+        }
+
+    </script>
+
+}

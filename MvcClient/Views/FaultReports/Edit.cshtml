@@ -1,0 +1,320 @@
+﻿@model Uam.LabHelpDesk.MvcClient.Models.FaultReportUpdateDto
+
+@{
+    ViewData["Title"] = "Editar Reporte";
+}
+
+<div id="alertContainer"></div>
+
+<div class="row justify-content-center">
+
+    <div class="col-lg-8">
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+
+            <div>
+
+                <h2 class="fw-bold mb-1">
+                    Editar Reporte de Avería
+                </h2>
+
+                <p class="text-muted mb-0">
+                    Modifique la información del reporte.
+                </p>
+
+            </div>
+
+        </div>
+
+        <div class="card shadow-sm">
+
+            <div class="card-body p-4">
+
+                <input type="hidden"
+                       id="reportId"
+                       value="@ViewBag.Id" />
+
+                <form id="frmEdit">
+
+                    <div class="mb-3">
+
+                        <label class="form-label fw-semibold">
+                            Equipo
+                        </label>
+
+                        <input id="equipmentCode"
+                               class="form-control"
+                               readonly />
+
+                    </div>
+
+                    <div class="mb-3">
+
+                        <label class="form-label fw-semibold">
+                            Título
+                        </label>
+
+                        <input id="title"
+                               class="form-control"
+                               maxlength="150"
+                               required />
+
+                    </div>
+
+                    <div class="mb-3">
+
+                        <label class="form-label fw-semibold">
+                            Descripción
+                        </label>
+
+                        <textarea id="description"
+                                  class="form-control"
+                                  rows="5"
+                                  maxlength="1000"
+                                  required></textarea>
+
+                    </div>
+
+                    <div class="row">
+
+                        <div class="col-md-6">
+
+                            <label class="form-label fw-semibold">
+                                Prioridad
+                            </label>
+
+                            <select id="priority"
+                                    class="form-select">
+
+                                <option value="Low">Low</option>
+                                <option value="Medium">Medium</option>
+                                <option value="High">High</option>
+                                <option value="Critical">Critical</option>
+
+                            </select>
+
+                        </div>
+
+                        <div class="col-md-6">
+
+                            <label class="form-label fw-semibold">
+                                Estado
+                            </label>
+
+                            <select id="status"
+                                    class="form-select">
+
+                                <option value="Pending">Pending</option>
+                                <option value="Resolved">Resolved</option>
+
+                            </select>
+
+                        </div>
+
+                    </div>
+
+                    <hr class="my-4" />
+
+                    <div class="d-flex gap-2">
+
+                        <button type="button"
+                                class="btn btn-success px-4"
+                                onclick="updateReport()">
+
+                            <i class="bi bi-check-circle me-2"></i>
+
+                            Guardar Cambios
+
+                        </button>
+
+                        <a asp-action="Index"
+                           class="btn btn-outline-secondary px-4">
+
+                            <i class="bi bi-arrow-left me-2"></i>
+
+                            Cancelar
+
+                        </a>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+@section Scripts {
+
+    <script>
+
+        document.addEventListener("DOMContentLoaded",()=>{
+
+            loadReport();
+
+        });
+
+        function showAlert(type,message){
+
+            const container=document.getElementById("alertContainer");
+
+            container.innerHTML=`
+                <div class="alert alert-${type} alert-dismissible fade show">
+
+                    ${message}
+
+                    <button class="btn-close"
+                            data-bs-dismiss="alert">
+                    </button>
+
+                </div>`;
+
+            window.scrollTo({
+                top:0,
+                behavior:"smooth"
+            });
+
+            setTimeout(()=>{
+
+                container.innerHTML="";
+
+            },4000);
+
+        }
+
+        async function loadReport(){
+
+            const id=document.getElementById("reportId").value;
+
+            try{
+
+                const response=
+                    await fetch(`/FaultReports/GetById?id=${id}`);
+
+                if(!response.ok){
+
+                    showAlert("danger","No fue posible obtener la información del reporte.");
+
+                    return;
+
+                }
+
+                const apiResponse=
+                    await response.json();
+
+                const report=
+                    apiResponse.result;
+
+                document.getElementById("equipmentCode").value=report.equipmentCode;
+                document.getElementById("title").value=report.title;
+                document.getElementById("description").value=report.description;
+                document.getElementById("priority").value=report.priority;
+                document.getElementById("status").value=report.status;
+
+                if(report.status==="Closed"){
+
+                    showAlert("warning","Este reporte ya fue cerrado.");
+
+                    setTimeout(()=>{
+
+                        window.location="/FaultReports";
+
+                    },1200);
+
+                }
+
+            }
+            catch{
+
+                showAlert("danger","Ocurrió un error al cargar el reporte.");
+
+            }
+
+        }
+
+        async function updateReport(){
+
+            const id=document.getElementById("reportId").value;
+
+            const dto={
+
+                title:document.getElementById("title").value.trim(),
+
+                description:document.getElementById("description").value.trim(),
+
+                priority:document.getElementById("priority").value,
+
+                status:document.getElementById("status").value
+
+            };
+
+            if(dto.title===""){
+
+                showAlert("warning","Debe ingresar un título.");
+
+                return;
+
+            }
+
+            if(dto.description===""){
+
+                showAlert("warning","Debe ingresar una descripción.");
+
+                return;
+
+            }
+
+            try{
+
+                const response=
+                    await fetch(`/FaultReports/Update?id=${id}`,{
+
+                        method:"PUT",
+
+                        headers:{
+                            "Content-Type":"application/json"
+                        },
+
+                        body:JSON.stringify(dto)
+
+                    });
+
+                const result=
+                    await response.json();
+
+                if(response.ok){
+
+                    showAlert("success",
+                        result.message ?? "Reporte actualizado correctamente.");
+
+                    setTimeout(()=>{
+
+                        window.location=`/FaultReports/Detail?id=${id}`;
+
+                    },1200);
+
+                }
+                else{
+
+                    showAlert("danger",
+                        result.message ?? "No fue posible actualizar el reporte.");
+
+                }
+
+            }
+            catch{
+
+                showAlert("danger",
+                    "Ocurrió un error al actualizar el reporte.");
+
+            }
+
+        }
+
+    </script>
+
+}

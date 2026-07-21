@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/Database/">
+    <File Path="Database/SeedData.sql" />
+  </Folder>
+  <Project Path="Api/Uam.LabHelpDesk.Api.csproj" />
+  <Project Path="MvcClient/Uam.LabHelpDesk.MvcClient.csproj" />
+  <Project Path="Tests/Uam.LabHelpDesk.Tests/Uam.LabHelpDesk.Tests.csproj" />
+</Solution>

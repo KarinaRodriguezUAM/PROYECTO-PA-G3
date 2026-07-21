@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+  <data name="OperationSuccessful" xml:space="preserve"><value>Operation completed successfully.</value></data>
+  <data name="LaboratoriesNotFound" xml:space="preserve"><value>No laboratories were found.</value></data>
+  <data name="LaboratoryNotFound" xml:space="preserve"><value>The specified laboratory was not found.</value></data>
+  <data name="LaboratoryCreatedSuccessfully" xml:space="preserve"><value>The laboratory was created successfully.</value></data>
+  <data name="LaboratoryUpdatedSuccessfully" xml:space="preserve"><value>The laboratory was updated successfully.</value></data>
+  <data name="LaboratoryDeletedSuccessfully" xml:space="preserve"><value>The laboratory was deleted successfully.</value></data>
+  <data name="LaboratoryNameExists" xml:space="preserve"><value>A laboratory with that name already exists.</value></data>
+</root>

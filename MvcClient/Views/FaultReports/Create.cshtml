@@ -1,0 +1,325 @@
+﻿@model Uam.LabHelpDesk.MvcClient.Models.FaultReportCreateDto
+
+@{
+    ViewData["Title"] = "Nuevo Reporte";
+}
+
+<div id="alertContainer"></div>
+
+<div class="row justify-content-center">
+
+    <div class="col-lg-8">
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+
+            <div>
+
+                <h2 class="fw-bold mb-1">
+                    Nuevo Reporte de Avería
+                </h2>
+
+                <p class="text-muted mb-0">
+                    Registrar una nueva avería en un equipo del laboratorio.
+                </p>
+
+            </div>
+
+        </div>
+
+        <div class="card shadow-sm">
+
+            <div class="card-body p-4">
+
+                <form id="frmCreate">
+
+                    <div class="mb-3">
+
+                        <label class="form-label fw-semibold">
+                            Equipo
+                        </label>
+
+                        <select id="equipmentId"
+                                class="form-select"
+                                required>
+
+                            <option value="">
+                                Cargando equipos...
+                            </option>
+
+                        </select>
+
+                    </div>
+
+                    <div class="mb-3">
+
+                        <label class="form-label fw-semibold">
+                            Título
+                        </label>
+
+                        <input id="title"
+                               class="form-control"
+                               maxlength="150"
+                               placeholder="Ej. Monitor no enciende"
+                               required />
+
+                    </div>
+
+                    <div class="mb-3">
+
+                        <label class="form-label fw-semibold">
+                            Descripción
+                        </label>
+
+                        <textarea id="description"
+                                  class="form-control"
+                                  rows="5"
+                                  maxlength="1000"
+                                  placeholder="Describa la avería encontrada..."
+                                  required></textarea>
+
+                    </div>
+
+                    <div class="row">
+
+                        <div class="col-md-4">
+
+                            <label class="form-label fw-semibold">
+                                Prioridad
+                            </label>
+
+                            <select id="priority"
+                                    class="form-select">
+
+                                <option value="Low">Low</option>
+                                <option value="Medium" selected>Medium</option>
+                                <option value="High">High</option>
+                                <option value="Critical">Critical</option>
+
+                            </select>
+
+                        </div>
+
+                    </div>
+
+                    <hr class="my-4" />
+
+                    <div class="d-flex gap-2">
+
+                        <button type="button"
+                                class="btn btn-success px-4"
+                                onclick="saveReport()">
+
+                            <i class="bi bi-check-circle me-2"></i>
+                            Guardar
+
+                        </button>
+
+                        <a asp-action="Index"
+                           class="btn btn-outline-secondary px-4">
+
+                            <i class="bi bi-arrow-left me-2"></i>
+                            Cancelar
+
+                        </a>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+@section Scripts {
+
+    <script>
+
+        document.addEventListener("DOMContentLoaded", () => {
+
+            loadEquipments();
+
+        });
+
+        function showAlert(type, message) {
+
+            const container = document.getElementById("alertContainer");
+
+            container.innerHTML = `
+                <div class="alert alert-${type} alert-dismissible fade show shadow-sm">
+
+                    ${message}
+
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="alert">
+                    </button>
+
+                </div>
+            `;
+
+            window.scrollTo({
+                top: 0,
+                behavior: "smooth"
+            });
+
+            setTimeout(() => {
+
+                container.innerHTML = "";
+
+            }, 4000);
+
+        }
+
+        async function loadEquipments() {
+
+            const combo = document.getElementById("equipmentId");
+
+            combo.innerHTML =
+                `<option>Cargando equipos...</option>`;
+
+            try {
+
+                const response =
+                    await fetch("/Equipment/GetAll");
+
+                const equipments =
+                    await response.json();
+
+                combo.innerHTML =
+                    `<option value="">Seleccione un equipo</option>`;
+
+                const operational =
+                    equipments.filter(x =>
+                        x.status === "Operational" &&
+                        x.isActive);
+
+                if (operational.length === 0) {
+
+                    combo.innerHTML =
+                        `<option>No existen equipos disponibles</option>`;
+
+                    combo.disabled = true;
+
+                    return;
+
+                }
+
+                operational.forEach(e => {
+
+                    combo.innerHTML += `
+                        <option value="${e.id}">
+                            ${e.code} - ${e.brand} ${e.model}
+                        </option>`;
+
+                });
+
+            }
+            catch {
+
+                combo.innerHTML =
+                    `<option>Error cargando equipos</option>`;
+
+                showAlert("danger", "No fue posible cargar los equipos.");
+
+            }
+
+        }
+
+        async function saveReport() {
+
+            const dto = {
+
+                equipmentId: parseInt(document.getElementById("equipmentId").value),
+
+                title: document.getElementById("title").value.trim(),
+
+                description: document.getElementById("description").value.trim(),
+
+                priority: document.getElementById("priority").value
+
+            };
+
+            if (!dto.equipmentId) {
+
+                showAlert("warning", "Debe seleccionar un equipo.");
+
+                return;
+
+            }
+
+            if (dto.title === "") {
+
+                showAlert("warning", "Debe ingresar un título.");
+
+                return;
+
+            }
+
+            if (dto.description === "") {
+
+                showAlert("warning", "Debe ingresar una descripción.");
+
+                return;
+
+            }
+
+            try {
+
+                const response = await fetch("/FaultReports/Create", {
+
+                    method: "POST",
+
+                    headers: {
+
+                        "Content-Type": "application/json"
+
+                    },
+
+                    body: JSON.stringify(dto)
+
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+
+                    showAlert(
+                        "success",
+                        result.message ?? "Reporte creado correctamente."
+                    );
+
+                    setTimeout(() => {
+
+                        window.location = "/FaultReports/Index";
+
+                    }, 1200);
+
+                }
+                else {
+
+                    showAlert(
+                        "danger",
+                        result.message ?? "No fue posible crear el reporte."
+                    );
+
+                }
+
+            }
+            catch {
+
+                showAlert(
+                    "danger",
+                    "Ocurrió un error al guardar el reporte."
+                );
+
+            }
+
+        }
+
+    </script>
+
+}

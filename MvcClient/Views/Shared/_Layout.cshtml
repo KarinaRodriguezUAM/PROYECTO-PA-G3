@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>@ViewData["Title"] - UAM Lab Help Desk</title>
+
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+
+    <link rel="stylesheet"
+          href="~/css/site.css"
+          asp-append-version="true" />
+
+    <style>
+
+            html, body {
+                height: 100%;
+            }
+
+            body {
+                margin: 0;
+                overflow-x: hidden;
+                background: #eef2f7;
+                font-family: "Segoe UI",sans-serif;
+            }
+
+            .sidebar {
+                position: fixed;
+                left: 0;
+                top: 0;
+                width: 300px;
+                height: 100vh;
+                background: #0f172a;
+                color: #fff;
+                display: flex;
+                flex-direction: column;
+            }
+
+            .sidebar-header {
+                padding: 28px;
+                font-size: 28px;
+                font-weight: 700;
+                border-bottom: 1px solid #1e293b;
+            }
+
+            .sidebar-menu {
+                list-style: none;
+                margin: 0;
+                padding: 10px 0;
+                flex: 1;
+            }
+
+                .sidebar-menu li a {
+                    display: block;
+                    color: #e5e7eb;
+                    text-decoration: none;
+                    padding: 18px 28px;
+                    font-size: 18px;
+                    transition: .2s;
+                }
+
+                    .sidebar-menu li a:hover {
+                        background: #1e293b;
+                        color: #fff;
+                    }
+
+                .sidebar-menu i {
+                    margin-right: 12px;
+                }
+
+            .sidebar-footer {
+                padding: 20px;
+                border-top: 1px solid #1e293b;
+            }
+
+            .sidebar-user {
+                margin-bottom: 15px;
+                color: #cbd5e1;
+                word-break: break-word;
+            }
+
+            .logout-btn {
+                width: 100%;
+            }
+
+            .main-content {
+                margin-left: 300px;
+                min-height: 100vh;
+                display: flex;
+                flex-direction: column;
+            }
+
+            .topbar {
+                height: 75px;
+                background: #fff;
+                border-bottom: 1px solid #dbe2ea;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 0 35px;
+            }
+
+            .topbar-title {
+                font-size: 20px;
+                font-weight: 600;
+                color: #0f172a;
+            }
+
+            .user-info {
+                text-align: right;
+            }
+
+                .user-info .name {
+                    font-weight: 700;
+                }
+
+                .user-info .email {
+                    color: #6b7280;
+                    font-size: 14px;
+                }
+
+            .content-wrapper {
+                padding: 40px;
+                flex: 1;
+            }
+
+            footer {
+                text-align: center;
+                padding: 20px;
+                color: #6b7280;
+                background: #eef2f7;
+            }
+
+    </style>
+
+</head>
+
+<body>
+
+    <!-- Global Loading Overlay -->
+    <div id="loadingOverlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(5px); z-index: 99999; justify-content: center; align-items: center; flex-direction: column;">
+        <div class="spinner-border text-light" style="width: 3.5rem; height: 3.5rem;" role="status"></div>
+        <h4 class="text-white mt-4 fw-bold" id="loadingText">Por favor, espere...</h4>
+        <p class="text-white-50 mt-1">Procesando solicitud y enviando notificaciones</p>
+    </div>
+
+    <div class="sidebar">
+
+        <div class="sidebar-header">
+            <i class="bi bi-headset"></i>
+            UAM Help Desk
+        </div>
+
+        <ul class="sidebar-menu">
+
+            <li>
+                <a asp-controller="Home" asp-action="Index">
+                    <i class="bi bi-speedometer2"></i>
+                    Inicio
+                </a>
+            </li>
+
+            @if (User.IsInRole("Administrator") || string.Equals(User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value ?? User.FindFirst("role")?.Value, "Administrator", StringComparison.OrdinalIgnoreCase))
+            {
+                <li>
+                    <a asp-controller="Dashboard" asp-action="Index">
+                        <i class="bi bi-graph-up-arrow"></i>
+                        Dashboard Métricas
+                    </a>
+                </li>
+            }
+
+            <li>
+                <a asp-controller="Laboratories" asp-action="Index">
+                    <i class="bi bi-building"></i>
+                    Laboratorios
+                </a>
+            </li>
+
+            <li>
+                <a asp-controller="Equipment" asp-action="Index">
+                    <i class="bi bi-pc-display"></i>
+                    Equipos
+                </a>
+            </li>
+
+            <li>
+                <a asp-controller="FaultReports" asp-action="Index">
+                    <i class="bi bi-tools"></i>
+                    Reportes de Averías
+                </a>
+            </li>
+
+
+            <li>
+                <a asp-controller="Users" asp-action="Index">
+                    <i class="bi bi-people"></i>
+                    Usuarios
+                </a>
+            </li>
+
+            <li>
+                <a asp-controller="Roles" asp-action="Index">
+                    <i class="bi bi-shield-lock"></i>
+                    Roles
+                </a>
+            </li>
+
+            <li>
+                <a asp-controller="Account" asp-action="MySessions">
+                    <i class="bi bi-hdd-network"></i>
+                    Mis Sesiones
+                </a>
+            </li>
+
+            <li>
+                <a asp-controller="Account" asp-action="ChangePassword">
+                    <i class="bi bi-lock"></i>
+                    Cambiar Contraseña
+                </a>
+            </li>
+                    
+
+            <li>
+                <a asp-controller="Account" asp-action="ForgotPassword">
+                    <i class="bi bi-key"></i>
+                    Restaurar Contraseña
+                </a>
+            </li>
+
+            
+        </ul>
+
+        <div class="sidebar-footer">
+
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                <div class="sidebar-user">
+
+                    <i class="bi bi-person-circle"></i>
+
+                    @User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value
+
+                </div>
+
+                <form asp-controller="Account"
+                      asp-action="Logout"
+                      method="post">
+
+                    <button class="btn btn-outline-light logout-btn">
+
+                        <i class="bi bi-box-arrow-right"></i>
+
+                        Cerrar Sesión
+
+                    </button>
+
+                </form>
+            }
+
+        </div>
+
+    </div>
+
+    <div class="main-content">
+
+        <div class="topbar">
+
+            <div class="topbar-title">
+                Sistema de Gestión de Averías
+            </div>
+
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                <div class="user-info">
+
+                    <div class="name">
+                        @(User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value ?? User.FindFirst("role")?.Value ?? "Usuario")
+                    </div>
+
+                    <div class="email">
+                        @User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value
+                    </div>
+
+                </div>
+            }
+
+        </div>
+
+        <div class="content-wrapper">
+
+            @RenderBody()
+
+        </div>
+
+        <footer>
+
+            © 2026 UAM Lab Help Desk | Desarrollado por Grupo 3 Programación Avanzada
+
+        </footer>
+
+    </div>
+
+    <div class="modal fade" id="confirmModal" tabindex="-1">
+
+        <div class="modal-dialog modal-dialog-centered">
+
+            <div class="modal-content">
+
+                <div class="modal-header bg-danger text-white" id="confirmHeader">
+
+                    <h5 class="modal-title" id="confirmTitle">
+                        Confirmar cierre
+                    </h5>
+
+                    <button class="btn-close btn-close-white"
+                            data-bs-dismiss="modal">
+                    </button>
+
+                </div>
+
+                <div class="modal-body" id="confirmMessage">
+                    ¿Está seguro de que desea cerrar este reporte de avería?
+                </div>
+
+                <div class="modal-footer">
+
+                    <button class="btn btn-secondary"
+                            data-bs-dismiss="modal">
+                        Cancelar
+                    </button>
+
+                    <button class="btn btn-danger"
+                            id="confirmDeleteBtn">
+                        Aceptar
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+
+        const confirmModal = new bootstrap.Modal(
+        document.getElementById("confirmModal")
+        );
+
+        function showDeleteConfirmation(message, callback){
+            document.getElementById("confirmTitle").textContent = "Confirmar cierre";
+            document.getElementById("confirmHeader").className = "modal-header bg-danger text-white";
+            document.getElementById("confirmDeleteBtn").className = "btn btn-danger";
+            document.getElementById("confirmMessage").textContent = message;
+            document.getElementById("confirmDeleteBtn").onclick = () => {
+                confirmModal.hide();
+                callback();
+            };
+            confirmModal.show();
+        }
+
+        function showCustomConfirmation(title, message, headerClass, buttonClass, callback){
+            document.getElementById("confirmTitle").textContent = title;
+            document.getElementById("confirmHeader").className = `modal-header ${headerClass} text-white`;
+            document.getElementById("confirmDeleteBtn").className = `btn ${buttonClass}`;
+            document.getElementById("confirmMessage").textContent = message;
+            document.getElementById("confirmDeleteBtn").onclick = () => {
+                confirmModal.hide();
+                callback();
+            };
+            confirmModal.show();
+        }
+
+        function showMessage(type, message) {
+
+        const oldAlert = document.getElementById("globalAlert");
+
+        if (oldAlert) {
+        oldAlert.remove();
+        }
+
+        const alert = document.createElement("div");
+
+        alert.id = "globalAlert";
+
+        alert.className =
+        `alert alert-${type} alert-dismissible fade show shadow`;
+
+        alert.innerHTML = `
+        <strong>${type === "success" ? "Éxito" : "Atención"}</strong><br>
+        ${message}
+
+        <button type="button"
+        class="btn-close"
+        data-bs-dismiss="alert">
+        </button>
+        `;
+
+        const container =
+        document.querySelector(".content-wrapper");
+
+        container.prepend(alert);
+
+        window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+        });
+
+        setTimeout(() => {
+
+        const bsAlert =
+        bootstrap.Alert.getOrCreateInstance(alert);
+
+        bsAlert.close();
+
+        }, 3500);
+
+        }
+
+        function showLoading(text) {
+            document.getElementById("loadingText").textContent = text || "Por favor, espere...";
+            document.getElementById("loadingOverlay").style.display = "flex";
+        }
+
+        function hideLoading() {
+            document.getElementById("loadingOverlay").style.display = "none";
+        }
+
+
+
+
+    </script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+
+</body>
+</html>

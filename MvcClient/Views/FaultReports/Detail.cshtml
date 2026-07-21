@@ -1,0 +1,399 @@
+@{
+    ViewData["Title"] = "Detalle del Reporte";
+}
+
+<div id="alertContainer"></div>
+
+<div class="container mt-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <h3>Detalle del Reporte</h3>
+
+        <a asp-action="Index" class="btn btn-secondary">
+
+            <i class="bi bi-arrow-left"></i>
+
+            Volver
+
+        </a>
+
+    </div>
+
+    <div class="card shadow-sm">
+
+        <div class="card-header bg-primary text-white">
+
+            Información del Reporte
+
+        </div>
+
+        <div class="card-body">
+
+            <div class="row mb-3">
+
+                <div class="col-md-4">
+
+                    <label class="fw-bold">Equipo</label>
+
+                    <div id="equipmentCode">-</div>
+
+                </div>
+
+                <div class="col-md-4">
+
+                    <label class="fw-bold">Instructor</label>
+
+                    <div id="reportedBy">-</div>
+
+                </div>
+
+                <div class="col-md-4">
+
+                    <label class="fw-bold">Técnico Asignado</label>
+
+                    <div id="assignedToUser">-</div>
+
+                </div>
+
+            </div>
+
+            <div class="row mb-3">
+
+                <div class="col-md-6">
+
+                    <label class="fw-bold">Prioridad</label>
+
+                    <div id="priority">-</div>
+
+                </div>
+
+                <div class="col-md-6">
+
+                    <label class="fw-bold">Estado</label>
+
+                    <div id="status">-</div>
+
+                </div>
+
+            </div>
+
+            <div class="mb-3">
+
+                <label class="fw-bold">Título</label>
+
+                <div id="title">-</div>
+
+            </div>
+
+            <div class="mb-3">
+
+                <label class="fw-bold">Descripción</label>
+
+                <div id="description">-</div>
+
+            </div>
+
+            <div class="row">
+
+                <div class="col-md-4">
+
+                    <label class="fw-bold">Reportado</label>
+
+                    <div id="reportedAt">-</div>
+
+                </div>
+
+                <div class="col-md-4">
+
+                    <label class="fw-bold">Creado</label>
+
+                    <div id="createdAt">-</div>
+
+                </div>
+
+                <div class="col-md-4">
+
+                    <label class="fw-bold">Actualizado</label>
+
+                    <div id="updatedAt">-</div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="card-footer text-end">
+
+            <button id="btnUpdateStatus"
+                    class="btn btn-info text-white me-1"
+                    style="display:none;"
+                    onclick="updateStatus()">
+
+                <i class="bi bi-arrow-repeat"></i>
+
+                Actualizar Estado
+
+            </button>
+
+            <button id="btnEdit"
+                    class="btn btn-warning me-1"
+                    style="display:none;"
+                    onclick="editReport()">
+
+                <i class="bi bi-pencil-square"></i>
+
+                Editar
+
+            </button>
+
+            <button id="btnClose"
+                    class="btn btn-danger"
+                    style="display:none;"
+                    onclick="closeReport()">
+
+                <i class="bi bi-check-circle"></i>
+
+                Cerrar Reporte
+
+            </button>
+
+        </div>
+
+    </div>
+
+    <div class="card shadow-sm mt-4">
+        <div class="card-header bg-secondary text-white">
+            <i class="bi bi-clock-history me-2"></i>Historial de Cambios de Estado
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-sm table-striped table-hover align-middle">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Estado Anterior</th>
+                            <th>Estado Nuevo</th>
+                            <th>Modificado Por</th>
+                            <th>Notas</th>
+                        </tr>
+                    </thead>
+                    <tbody id="logsTableBody">
+                        <tr>
+                            <td colspan="5" class="text-center text-muted">No hay registros en el historial.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+@section Scripts {
+
+    <script>
+
+        const reportId = @ViewBag.Id;
+        const currentUserId = @(User.FindFirst("UserId")?.Value ?? "0");
+        const userRole = '@(User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value ?? "")';
+
+        function showAlert(type, message){
+
+            const container = document.getElementById("alertContainer");
+
+            container.innerHTML = `
+                <div class="alert alert-${type} alert-dismissible fade show">
+
+                    ${message}
+
+                    <button class="btn-close"
+                            data-bs-dismiss="alert">
+                    </button>
+
+                </div>`;
+
+            window.scrollTo({
+                top:0,
+                behavior:"smooth"
+            });
+
+            setTimeout(()=>{
+
+                container.innerHTML="";
+
+            },4000);
+
+        }
+
+        async function loadReport(){
+
+            try{
+
+                const response =
+                    await fetch(`/FaultReports/GetById?id=${reportId}`);
+
+                if(!response.ok){
+
+                    showAlert("danger","No fue posible obtener el reporte.");
+
+                    return;
+
+                }
+
+                const apiResponse =
+                    await response.json();
+
+                const report =
+                    apiResponse.result;
+
+                document.getElementById("equipmentCode").textContent=report.equipmentCode;
+                document.getElementById("reportedBy").textContent=report.reportedBy;
+                document.getElementById("assignedToUser").textContent=report.assignedToUser || "Sin asignar";
+                document.getElementById("title").textContent=report.title;
+                document.getElementById("description").textContent=report.description;
+                document.getElementById("priority").textContent=report.priority;
+                document.getElementById("status").textContent=report.status;
+
+                document.getElementById("reportedAt").textContent=
+                    new Date(report.reportedAtUtc).toLocaleString();
+
+                document.getElementById("createdAt").textContent=
+                    new Date(report.createdAtUtc).toLocaleString();
+
+                document.getElementById("updatedAt").textContent=
+                    new Date(report.updatedAtUtc).toLocaleString();
+
+                if (report.status === "InProgress" && report.assignedToUserId === currentUserId) {
+                    document.getElementById("btnUpdateStatus").style.display = "inline-block";
+                }
+
+                if(report.status!=="Closed"){
+
+                    document.getElementById("btnEdit").style.display="inline-block";
+                    document.getElementById("btnClose").style.display="inline-block";
+
+                }
+
+                loadLogs();
+
+            }
+            catch{
+
+                showAlert("danger","Error cargando el reporte.");
+
+            }
+
+        }
+
+        function editReport(){
+
+            window.location=`/FaultReports/Edit?id=${reportId}`;
+
+        }
+
+        async function closeReport(){
+
+            showDeleteConfirmation(
+
+                "¿Desea cerrar este reporte?",
+
+                async ()=>{
+                    showLoading("Cerrando reporte...");
+                    try{
+
+                        const response =
+                            await fetch(`/FaultReports/Close?id=${reportId}`,{
+
+                                method:"POST"
+
+                            });
+
+                        const result =
+                            await response.json();
+
+                        if(response.ok){
+
+                            showAlert("success",result.message);
+
+                            setTimeout(()=>{
+
+                                window.location="/FaultReports/Index";
+
+                            },1200);
+
+                        }
+                        else{
+
+                            showAlert("danger",result.message);
+
+                        }
+
+                    }
+                    catch{
+
+                        showAlert("danger","Ocurrió un error al cerrar el reporte.");
+
+                    }
+                    finally {
+                        hideLoading();
+                    }
+
+                }
+
+            );
+
+        }
+
+        function updateStatus(){
+            window.location=`/FaultReports/UpdateStatus?id=${reportId}`;
+        }
+
+        async function loadLogs() {
+            try {
+                const response = await fetch(`/FaultReports/GetLogs?id=${reportId}`);
+                if (!response.ok) return;
+                const logs = await response.json();
+                const tbody = document.getElementById("logsTableBody");
+                tbody.innerHTML = "";
+                if (logs.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted">No hay registros en el historial.</td></tr>`;
+                    return;
+                }
+                logs.forEach(log => {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${new Date(log.changedAtUtc).toLocaleString()}</td>
+                            <td>${statusBadge(log.previousStatus)}</td>
+                            <td>${statusBadge(log.newStatus)}</td>
+                            <td>${log.changedByUserName}</td>
+                            <td>${log.notes || '<span class="text-muted">Sin notas</span>'}</td>
+                        </tr>
+                    `;
+                });
+            } catch {
+                console.error("Error al cargar los logs.");
+            }
+        }
+
+        function statusBadge(status){
+            switch(status){
+                case "Pending":
+                    return `<span class="badge bg-warning text-dark">Pendiente</span>`;
+                case "InProgress":
+                    return `<span class="badge bg-primary">In Progress</span>`;
+                case "Resolved":
+                    return `<span class="badge bg-info">Resuelto</span>`;
+                case "Closed":
+                    return `<span class="badge bg-success">Cerrado</span>`;
+                default:
+                    return `<span class="badge bg-secondary">${status}</span>`;
+            }
+        }
+
+        loadReport();
+
+    </script>
+
+}

@@ -1,0 +1,113 @@
+﻿@{
+    ViewData["Title"] = "Inicio";
+    Layout = "_Layout";
+}
+
+<div class="container-fluid">
+
+    <div class="mb-4">
+        <h1 class="fw-bold text-primary">UAM Lab Help Desk</h1>
+        <p class="text-muted">
+            Plataforma centralizada para la administración de laboratorios, equipos y usuarios.
+        </p>
+    </div>
+
+    <div class="row g-4">
+
+        <div class="col-md-3">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <small class="text-muted">Laboratorios</small>
+                    <h2 id="totalLabs">0</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <small class="text-muted">Equipos</small>
+                    <h2 id="totalEquipment">0</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <small class="text-muted">Usuarios</small>
+                    <h2 id="totalUsers">0</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <small class="text-muted">Roles</small>
+                    <h2 id="totalRoles">0</h2>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="mt-5">
+        <img src="~/images/helpdesk-banner.jpg"
+             class="img-fluid rounded shadow"
+             style="height:450px;object-fit:cover;width:100%;" />
+    </div>
+
+</div>
+
+@section Scripts {
+
+    <script>
+
+        console.log("SCRIPT HOME CARGADO");
+
+        async function loadDashboard(){
+
+            console.log("loadDashboard ejecutándose");
+
+            try{
+                const labs = await fetch('/Laboratories/GetAll').then(r => r.json());
+                console.log("Labs:", labs);
+                document.getElementById('totalLabs').innerText = labs.length;
+            }catch(ex){
+                console.error("Labs", ex);
+            }
+
+            try{
+                const equipment = await fetch('/Equipment/GetAll').then(r => r.json());
+                console.log("Equipment:", equipment);
+                document.getElementById('totalEquipment').innerText = equipment.length;
+            }catch(ex){
+                console.error("Equipment", ex);
+            }
+
+            try{
+                const users = await fetch('/Users/GetAll').then(r => r.json());
+                console.log("Users:", users);
+                document.getElementById('totalUsers').innerText = users.length;
+            }catch(ex){
+                console.error("Users", ex);
+            }
+
+            try{
+                const roles = await fetch('/Roles/GetAll').then(r => r.json());
+                console.log("Roles:", roles);
+                document.getElementById('totalRoles').innerText = roles.length;
+            }catch(ex){
+                console.error("Roles", ex);
+            }
+
+        }
+
+        window.loadDashboard = loadDashboard;
+
+        loadDashboard();
+
+    </script>
+
+}

@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="0" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+
+  <data name="ReportCreatedSubject" xml:space="preserve">
+    <value>New Fault Report Created - UAM Lab Help Desk</value>
+  </data>
+  <data name="ReportCreatedBody" xml:space="preserve">
+    <value>&lt;h3 style="color:#0f172a;"&gt;New Fault Report Registered&lt;/h3&gt;&lt;p&gt;A new fault report has been created requiring technical attention:&lt;/p&gt;&lt;ul&gt;&lt;li&gt;&lt;strong&gt;Report:&lt;/strong&gt; {0}&lt;/li&gt;&lt;li&gt;&lt;strong&gt;Affected Equipment:&lt;/strong&gt; {1}&lt;/li&gt;&lt;li&gt;&lt;strong&gt;Laboratory:&lt;/strong&gt; {2}&lt;/li&gt;&lt;li&gt;&lt;strong&gt;Current Status:&lt;/strong&gt; {3}&lt;/li&gt;&lt;li&gt;&lt;strong&gt;Event Date:&lt;/strong&gt; {4}&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;Please log into the system to assign this report.&lt;/p&gt;</value>
+  </data>
+
+  <data name="ReportAssignedSubject" xml:space="preserve">
+    <value>Fault Report Assignment - UAM Lab Help Desk</value>
+  </data>
+  <data name="ReportAssignedBody" xml:space="preserve">
+    <value>&lt;h3 style="color:#0f172a;"&gt;Fault Report Assigned&lt;/h3&gt;&lt;p&gt;You have been assigned to handle the following fault report:&lt;/p&gt;&lt;ul&gt;&lt;li&gt;&lt;strong&gt;Report:&lt;/strong&gt; {0}&lt;/li&gt;&lt;li&gt;&lt;strong&gt;Affected Equipment:&lt;/strong&gt; {1}&lt;/li&gt;&lt;li&gt;&lt;strong&gt;Laboratory:&lt;/strong&gt; {2}&lt;/li&gt;&lt;li&gt;&lt;strong&gt;Current Status:&lt;/strong&gt; {3}&lt;/li&gt;&lt;li&gt;&lt;strong&gt;Event Date:&lt;/strong&gt; {4}&lt;/li&gt;&lt;/ul&gt;</value>
+  </data>
+
+  <data name="StatusChangedSubject" xml:space="preserve">
+    <value>Fault Report Status Update - UAM Lab Help Desk</value>
+  </data>
+  <data name="StatusChangedBody" xml:space="preserve">
+    <value>&lt;h3 style="color:#0f172a;"&gt;Fault Report Status Updated&lt;/h3&gt;&lt;p&gt;The status of your fault report has been updated:&lt;/p&gt;&lt;ul&gt;&lt;li&gt;&lt;strong&gt;Report:&lt;/strong&gt; {0}&lt;/li&gt;&lt;li&gt;&lt;strong&gt;Affected Equipment:&lt;/strong&gt; {1}&lt;/li&gt;&lt;li&gt;&lt;strong&gt;Laboratory:&lt;/strong&gt; {2}&lt;/li&gt;&lt;li&gt;&lt;strong&gt;New Status:&lt;/strong&gt; {3}&lt;/li&gt;&lt;li&gt;&lt;strong&gt;Event Date:&lt;/strong&gt; {4}&lt;/li&gt;&lt;/ul&gt;</value>
+  </data>
+
+  <data name="ReportClosedSubject" xml:space="preserve">
+    <value>Fault Report Closed - UAM Lab Help Desk</value>
+  </data>
+  <data name="ReportClosedBody" xml:space="preserve">
+    <value>&lt;h3 style="color:#0f172a;"&gt;Fault Report Closed&lt;/h3&gt;&lt;p&gt;Your fault report has been successfully closed:&lt;/p&gt;&lt;ul&gt;&lt;li&gt;&lt;strong&gt;Report:&lt;/strong&gt; {0}&lt;/li&gt;&lt;li&gt;&lt;strong&gt;Affected Equipment:&lt;/strong&gt; {1}&lt;/li&gt;&lt;li&gt;&lt;strong&gt;Laboratory:&lt;/strong&gt; {2}&lt;/li&gt;&lt;li&gt;&lt;strong&gt;Current Status:&lt;/strong&gt; {3}&lt;/li&gt;&lt;li&gt;&lt;strong&gt;Event Date:&lt;/strong&gt; {4}&lt;/li&gt;&lt;/ul&gt;</value>
+  </data>
+</root>
